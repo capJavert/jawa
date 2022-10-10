@@ -8,6 +8,8 @@ const scrape = async (configPath, options) => {
     const jsonData = (await fs.readFile(configPath)).toString()
     const config = JSON.parse(jsonData)
 
+    console.log('Loaded config')
+
     const browser = await puppeteer.launch()
     const page = await browser.newPage()
     page.emulate({
@@ -28,13 +30,19 @@ const scrape = async (configPath, options) => {
         throw new Error('Config invalid, Array expected for items')
     }
 
+    console.log('Scraping URL', config.url)
+
     await page.goto(config.url)
 
     const results = await Promise.allSettled(
         config.items.map(async item => {
+            if (options.verbose) {
+                console.log('Find selector', item.selector)
+            }
+
             return {
                 selector: item.selector,
-                content: await page.$eval(item.selector, element => element.textContent)
+                textContent: await page.$eval(item.selector, element => element.textContent)
             }
         })
     )
