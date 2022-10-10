@@ -19,13 +19,22 @@ const main = async () => {
         points: {}
     }
 
+    const numberMatch = /\d/
+
     window.addEventListener(
         'click',
         event => {
             event.preventDefault()
             event.stopPropagation()
 
-            const selector = finder(event.target)
+            const selector = finder(event.target, {
+                className: name => {
+                    const isMinified = ['css', 'jss', 'styled', 'style'].some(item => name.startsWith(item))
+                    const hasNumber = numberMatch.test(name)
+
+                    return !isMinified && !hasNumber
+                }
+            })
 
             scraperData.points[selector] = {
                 selector,
