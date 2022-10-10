@@ -60,7 +60,7 @@ const scrape = async (configPath, options) => {
 
 yargsInstance(hideBin(process.argv))
     .command({
-        command: 'scrape <configPath>',
+        command: '$0 <configPath>',
         describe: 'scrape the URLs and data from JSON config',
         builder: yargs => {
             yargs.positional('configPath', {
