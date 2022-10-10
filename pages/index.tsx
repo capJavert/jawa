@@ -52,6 +52,31 @@ const Home: NextPage = () => {
     return (
         <div className={styles.main}>
             <div className={styles.toolbar}>
+                <input
+                    onClick={() => {
+                        const aElement = document.createElement('a')
+                        aElement.setAttribute('download', `vscraper-${Date.now()}.json`)
+                        const href = URL.createObjectURL(
+                            new Blob(
+                                [
+                                    JSON.stringify({
+                                        url: activeUrl,
+                                        items
+                                    })
+                                ],
+                                {
+                                    type: 'application/json'
+                                }
+                            )
+                        )
+                        aElement.href = href
+                        aElement.setAttribute('target', '_blank')
+                        aElement.click()
+                        URL.revokeObjectURL(href)
+                    }}
+                    type="button"
+                    value="Download"
+                />
                 {items.map(item => (
                     <div key={item.selector}>{item.selector}</div>
                 ))}
