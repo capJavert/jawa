@@ -4,17 +4,18 @@ import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import SendIcon from '@mui/icons-material/Send'
 import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
+import CircularProgress from '@mui/joy/CircularProgress'
 import Sheet from '@mui/joy/Sheet'
 import TextField from '@mui/joy/TextField'
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Controller, useController, useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import Layout from '../components/Layout'
 import styles from '../styles/Home.module.css'
-import { ScraperConfig, ScraperSelector } from '../types'
+import { EScraperMessageType, TScraperConfig, TScraperMessage, TScraperSelector } from '../types'
 
 const schema = z.object({
     url: z.string().url({ message: 'Invalid URL' }).min(1, { message: 'Required' })
@@ -32,7 +33,7 @@ const getPortalContainer = (() => () => {
 
 const Home: NextPage = () => {
     const router = useRouter()
-    const { control, handleSubmit } = useForm<ScraperConfig>({
+    const { control, handleSubmit } = useForm<TScraperConfig>({
         resolver: zodResolver(schema),
         mode: 'onSubmit'
     })
@@ -47,9 +48,15 @@ const Home: NextPage = () => {
     const [activeUrl, setActiveUrl] = useState('')
     const urlController = useController({ name: 'url', control })
 
+    const [isIframeLoading, setIframeLoading] = useState(false)
+
     useEffect(() => {
         if (queryUrl && schema.safeParse({ url: queryUrl }).success) {
-            setActiveUrl(queryUrl as string)
+            setActiveUrl(current => {
+                setIframeLoading(current !== queryUrl)
+
+                return queryUrl as string
+            })
             urlController.field.onChange(queryUrl as string)
 
             const { url: _url, ...restQuery } = router.query
@@ -62,27 +69,43 @@ const Home: NextPage = () => {
     }, [queryUrl, router, urlController.field])
 
     useEffect(() => {
-        const onMessage = (event: MessageEvent<ScraperSelector>) => {
+        const onMessage = (event: MessageEvent<TScraperMessage>) => {
             // TODO add valid origins check
 
-            const { url, selector } = event.data
+            const { type, payload } = event.data
 
-            if (!selector) {
+            if (!type || typeof payload !== 'object' || Array.isArray(payload)) {
                 return
             }
 
-            if (!schema.safeParse({ url }).success) {
-                return
-            }
+            switch (type) {
+                case EScraperMessageType.scrape: {
+                    const {
+                        payload: { url, selector }
+                    } = event.data as TScraperMessage<TScraperSelector>
 
-            const fieldInstance = selectorsFieldRef.current
-            const currentField = fieldInstance.fields.find(item => item.selector === selector)
+                    if (!selector) {
+                        return
+                    }
 
-            if (!currentField) {
-                fieldInstance.append({
-                    url,
-                    selector
-                })
+                    if (!schema.safeParse({ url }).success) {
+                        return
+                    }
+
+                    const fieldInstance = selectorsFieldRef.current
+                    const currentField = fieldInstance.fields.find(item => item.selector === selector)
+
+                    if (!currentField) {
+                        fieldInstance.append({
+                            url,
+                            selector
+                        })
+                    }
+
+                    break
+                }
+                default:
+                    break
             }
         }
 
@@ -94,7 +117,11 @@ const Home: NextPage = () => {
     }, [])
 
     const onSubmit = handleSubmit(values => {
-        setActiveUrl(values.url)
+        setActiveUrl(current => {
+            setIframeLoading(current !== values.url)
+
+            return values.url
+        })
     })
 
     const { fields } = selectorsField
@@ -206,7 +233,28 @@ const Home: NextPage = () => {
                         ))}
                     </Layout.Container>
                 </Layout.Side>
-                <Layout.Main>
+                <Layout.Main
+                    sx={{
+                        position: 'relative'
+                    }}
+                >
+                    {isIframeLoading && (
+                        <Box
+                            sx={{
+                                position: 'absolute',
+                                top: 0,
+                                right: 0,
+                                bottom: 0,
+                                left: 0,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                background: 'rgba(0, 0, 0, 0.5);'
+                            }}
+                        >
+                            <CircularProgress color="primary" size="lg" />
+                        </Box>
+                    )}
                     <iframe
                         tabIndex={-1}
                         src={activeUrl}
@@ -215,6 +263,9 @@ const Home: NextPage = () => {
                         width="100%"
                         height="100%"
                         frameBorder={0}
+                        onLoad={useCallback(() => {
+                            setIframeLoading(false)
+                        }, [])}
                     ></iframe>
                 </Layout.Main>
             </Layout.Container>

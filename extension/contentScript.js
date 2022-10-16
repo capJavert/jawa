@@ -42,7 +42,13 @@ const main = async () => {
             }
 
             window.top.postMessage(
-                { url: scraperData.url, selector },
+                {
+                    type: 'scrape',
+                    payload: {
+                        url: scraperData.url,
+                        selector
+                    }
+                },
                 {
                     targetOrigin: '*'
                 }

@@ -1,9 +1,18 @@
-export type ScraperSelector = {
+export type TScraperSelector = {
     url: string
     selector: string
 }
 
-export type ScraperConfig = {
+export type TScraperConfig = {
     url: string
-    items: ScraperSelector[]
+    items: TScraperSelector[]
+}
+
+export enum EScraperMessageType {
+    scrape = 'scrape'
+}
+
+export type TScraperMessage<Payload = Record<string, any>> = {
+    type: EScraperMessageType
+    payload: Payload
 }
