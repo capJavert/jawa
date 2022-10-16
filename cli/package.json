@@ -1,12 +1,13 @@
 {
-    "name": "vscraper-cli",
+    "name": "jawa",
     "version": "0.0.1",
-    "description": "Visual scraper interface, exports do puppeteer script which you can run anywhere.",
+    "description": "Visual scraper interface, exports to puppeteer script which you can run anywhere.",
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "bin": {
+        "jawa": "./index.js",
         "vscraper-cli": "./index.js",
         "vscraper": "./index.js"
     },
@@ -21,7 +22,7 @@
     },
     "homepage": "https://github.com/capJavert/vscraper#readme",
     "dependencies": {
-        "puppeteer": "^18.2.1",
-        "yargs": "^17.6.0"
+        "puppeteer": "18.2.1",
+        "yargs": "17.6.0"
     }
 }
