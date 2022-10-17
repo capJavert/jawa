@@ -16,3 +16,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             break
     }
 })
+
+chrome.runtime.onConnectExternal.addListener(port => {
+    port.postMessage({ type: 'init', ok: true })
+})

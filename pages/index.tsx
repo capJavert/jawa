@@ -122,6 +122,69 @@ const Home: NextPage = () => {
         }
     }, [])
 
+    const [extensionPort, setExtensionPort] = useState<chrome.runtime.Port | undefined>()
+
+    useEffect(() => {
+        let mounted = true
+        const extensionId = process.env.NEXT_PUBLIC_EXTENSION_CHROME_ID
+
+        if (!extensionId) {
+            return
+        }
+
+        const browser = window.chrome
+
+        if (!browser) {
+            return
+        }
+
+        let port: chrome.runtime.Port
+
+        const handleExtensionConnection = async () => {
+            while (true) {
+                if (!mounted) {
+                    return
+                }
+
+                try {
+                    port = browser.runtime.connect(extensionId)
+
+                    if (port) {
+                        port.onMessage.addListener(response => {
+                            if (response && response.type === 'init' && response.ok) {
+                                setExtensionPort(port)
+                            }
+                        })
+
+                        await new Promise(resolve => {
+                            port.onDisconnect.addListener(() => {
+                                setExtensionPort(undefined)
+
+                                resolve(true)
+                            })
+                        })
+                    }
+                } catch (error) {
+                    console.error('Extension connect error', error)
+                }
+
+                await new Promise(resolve => {
+                    setTimeout(resolve, 1000)
+                })
+            }
+        }
+
+        handleExtensionConnection()
+
+        return () => {
+            mounted = false
+
+            if (port) {
+                port.disconnect()
+            }
+        }
+    }, [])
+
     const onSubmit = handleSubmit(values => {
         setActiveUrl(current => {
             setIframeLoading(current !== values.url)
