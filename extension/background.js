@@ -3,7 +3,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         case 'init': {
             if (sender.tab) {
                 const url = new URL(sender.tab.url)
-                const allowedHostNames = ['localhost', 'kickass.website', 'kickass.codes', 'kickass.ngrok.io']
+                const allowedHostNames = [
+                    'localhost',
+                    'kickass.website',
+                    'kickass.codes',
+                    'kickass.ngrok.io',
+                    'jawa.kickass.codes'
+                ]
 
                 if (allowedHostNames.includes(url.hostname)) {
                     return sendResponse({ ok: true })
