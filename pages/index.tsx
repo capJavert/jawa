@@ -132,12 +132,6 @@ const Home: NextPage = () => {
             return
         }
 
-        const browser = window.chrome
-
-        if (!browser) {
-            return
-        }
-
         let port: chrome.runtime.Port
 
         const handleExtensionConnection = async () => {
@@ -146,26 +140,30 @@ const Home: NextPage = () => {
                     return
                 }
 
-                try {
-                    port = browser.runtime.connect(extensionId)
+                const browser = window.chrome
 
-                    if (port) {
-                        port.onMessage.addListener(response => {
-                            if (response && response.type === 'init' && response.ok) {
-                                setExtensionPort(port)
-                            }
-                        })
+                if (browser?.runtime?.connect) {
+                    try {
+                        port = browser.runtime.connect(extensionId)
 
-                        await new Promise(resolve => {
-                            port.onDisconnect.addListener(() => {
-                                setExtensionPort(undefined)
-
-                                resolve(true)
+                        if (port) {
+                            port.onMessage.addListener(response => {
+                                if (response && response.type === 'init' && response.ok) {
+                                    setExtensionPort(port)
+                                }
                             })
-                        })
+
+                            await new Promise(resolve => {
+                                port.onDisconnect.addListener(() => {
+                                    setExtensionPort(undefined)
+
+                                    resolve(true)
+                                })
+                            })
+                        }
+                    } catch (error) {
+                        console.error('Extension connect error', error)
                     }
-                } catch (error) {
-                    console.error('Extension connect error', error)
                 }
 
                 await new Promise(resolve => {
