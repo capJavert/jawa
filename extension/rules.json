@@ -8,6 +8,10 @@
                 {
                     "header": "x-frame-options",
                     "operation": "remove"
+                },
+                {
+                    "header": "content-security-policy",
+                    "operation": "remove"
                 }
             ]
         },
