@@ -1,6 +1,4 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log(message)
-
     switch (message.type) {
         case 'init': {
             if (sender.tab) {
