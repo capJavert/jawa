@@ -14,7 +14,7 @@ import ColorSchemeToggle from '../components/ColorScheemToggle'
 import Layout from '../components/Layout'
 import theme from '../theme'
 
-function MyApp({ Component, pageProps }: AppProps) {
+const App = ({ Component, pageProps }: AppProps) => {
     return (
         <CssVarsProvider disableTransitionOnChange theme={theme} defaultMode="system">
             <DefaultSeo
@@ -52,7 +52,7 @@ function MyApp({ Component, pageProps }: AppProps) {
                             <FaceIcon />
                         </IconButton>
                         <Typography component="h1" fontWeight="xl">
-                            JAWA visual scraper
+                            Jawa <Typography level="body3">Visual&nbsp;Scraper</Typography>
                         </Typography>
                     </Box>
                     <Box
@@ -74,4 +74,4 @@ function MyApp({ Component, pageProps }: AppProps) {
     )
 }
 
-export default MyApp
+export default App

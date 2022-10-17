@@ -3,6 +3,8 @@ import Portal from '@mui/base/Portal'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import SendIcon from '@mui/icons-material/Send'
 import TabIcon from '@mui/icons-material/Tab'
+import WarningIcon from '@mui/icons-material/Warning'
+import Alert from '@mui/joy/Alert'
 import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
 import CircularProgress from '@mui/joy/CircularProgress'
@@ -148,7 +150,10 @@ const Home: NextPage = () => {
                 <Portal container={getPortalContainer}>
                     <Box
                         sx={{
-                            display: 'flex',
+                            display: {
+                                xs: 'none',
+                                md: 'flex'
+                            },
                             gap: '15px',
                             flex: 1
                         }}
@@ -220,7 +225,14 @@ const Home: NextPage = () => {
                     height: '100vh'
                 }}
             >
-                <Layout.Side>
+                <Layout.Side
+                    sx={{
+                        display: {
+                            xs: 'none',
+                            md: 'flex'
+                        }
+                    }}
+                >
                     <Layout.Container
                         sx={{
                             flex: 1
@@ -281,7 +293,8 @@ const Home: NextPage = () => {
                                 alignItems: 'center',
                                 flexDirection: 'column',
                                 fontSize: '100px',
-                                flex: 1
+                                flex: 1,
+                                p: 2
                             }}
                         >
                             <TabIcon fontSize="inherit" color="primary" />
@@ -304,6 +317,28 @@ const Home: NextPage = () => {
                             >
                                 We Jawa are here to help you scrape content from any website quick and easy.
                             </Typography>
+
+                            <Alert
+                                color="warning"
+                                sx={{
+                                    display: {
+                                        xs: 'flex',
+                                        md: 'none'
+                                    },
+                                    marginBottom: 5,
+                                    alignItems: 'flex-start'
+                                }}
+                                startDecorator={<WarningIcon sx={{ mt: '4px', mx: '4px' }} />}
+                            >
+                                <div>
+                                    <Typography fontWeight="lg" mt={0.25}>
+                                        Warning
+                                    </Typography>
+                                    <Typography fontSize="sm" sx={{ opacity: 0.8 }}>
+                                        To use this tool you have to use a desktop browser.
+                                    </Typography>
+                                </div>
+                            </Alert>
 
                             <Typography
                                 level="h3"
