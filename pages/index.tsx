@@ -1,3 +1,4 @@
+import { ClassNames } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Portal from '@mui/base/Portal'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
@@ -20,6 +21,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Controller, useController, useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import Browser from '../components/Browser'
 import Layout from '../components/Layout'
 import { EScraperMessageType, TScraperConfig, TScraperMessage, TScraperSelector } from '../types'
 
@@ -195,6 +197,7 @@ const Home: NextPage = () => {
     const onIframeLoad = useCallback(() => {
         setIframeLoading(false)
     }, [])
+    const isExtensionInstalled = !!extensionPort
 
     return (
         <>
@@ -318,7 +321,7 @@ const Home: NextPage = () => {
                         position: 'relative'
                     }}
                 >
-                    {isIframeLoading && (
+                    {isIframeLoading && isExtensionInstalled && (
                         <Box
                             sx={{
                                 position: 'absolute',
@@ -336,16 +339,7 @@ const Home: NextPage = () => {
                         </Box>
                     )}
                     {activeUrl ? (
-                        <iframe
-                            tabIndex={-1}
-                            src={activeUrl}
-                            id="vscraper"
-                            sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts"
-                            width="100%"
-                            height="100%"
-                            frameBorder={0}
-                            onLoad={onIframeLoad}
-                        ></iframe>
+                        <Browser url={activeUrl} enabled={isExtensionInstalled} onLoad={onIframeLoad} />
                     ) : (
                         <Box
                             sx={{
@@ -362,6 +356,7 @@ const Home: NextPage = () => {
 
                             <Typography
                                 level="h1"
+                                textAlign="center"
                                 sx={{
                                     marginTop: 5,
                                     marginBottom: 2
@@ -403,6 +398,7 @@ const Home: NextPage = () => {
 
                             <Typography
                                 level="h3"
+                                textAlign="center"
                                 sx={{
                                     marginBottom: 2
                                 }}
