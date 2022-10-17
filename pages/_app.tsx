@@ -8,6 +8,7 @@ import { CssVarsProvider } from '@mui/joy/styles'
 import Typography from '@mui/joy/Typography'
 import { GlobalStyles } from '@mui/system'
 import type { AppProps } from 'next/app'
+import { DefaultSeo } from 'next-seo'
 
 import ColorSchemeToggle from '../components/ColorScheemToggle'
 import Layout from '../components/Layout'
@@ -16,6 +17,14 @@ import theme from '../theme'
 function MyApp({ Component, pageProps }: AppProps) {
     return (
         <CssVarsProvider disableTransitionOnChange theme={theme} defaultMode="system">
+            <DefaultSeo
+                defaultTitle="Jawa - Visual Scraper"
+                titleTemplate="Jawa | %s"
+                description="Visual scraper interface, exports do puppeteer script which you can run anywhere!"
+                openGraph={{
+                    images: []
+                }}
+            />
             <GlobalStyles<Theme>
                 styles={theme => ({
                     body: {
