@@ -9,6 +9,7 @@ export type TScraperConfig = {
 }
 
 export enum EScraperMessageType {
+    init = 'init',
     scrape = 'scrape'
 }
 

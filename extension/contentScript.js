@@ -4,8 +4,12 @@ const main = async () => {
     if (
         !isFrame ||
         !(await new Promise(resolve => {
-            chrome.runtime.sendMessage({ type: 'init' }, response => {
-                resolve(response.ok)
+            chrome.runtime.sendMessage(chrome.runtime.id, { type: 'init' }, response => {
+                if (response && response.type === 'init' && typeof response.ok === 'boolean') {
+                    resolve(response.ok)
+                } else {
+                    resolve(false)
+                }
             })
         }))
     ) {
