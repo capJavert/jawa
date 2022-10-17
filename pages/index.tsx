@@ -124,7 +124,7 @@ const Home: NextPage = () => {
         }
     }, [])
 
-    const [extensionPort, setExtensionPort] = useState<chrome.runtime.Port | undefined>()
+    const [extensionPort, setExtensionPort] = useState<chrome.runtime.Port | null | undefined>()
 
     useEffect(() => {
         let mounted = true
@@ -157,7 +157,7 @@ const Home: NextPage = () => {
 
                             await new Promise(resolve => {
                                 port.onDisconnect.addListener(() => {
-                                    setExtensionPort(undefined)
+                                    setExtensionPort(null)
 
                                     resolve(true)
                                 })
@@ -165,6 +165,8 @@ const Home: NextPage = () => {
                         }
                     } catch (error) {
                         console.error('Extension connect error', error)
+
+                        setExtensionPort(null)
                     }
                 }
 
@@ -198,6 +200,7 @@ const Home: NextPage = () => {
         setIframeLoading(false)
     }, [])
     const isExtensionInstalled = !!extensionPort
+    const isExtensionInstallPending = typeof extensionPort === undefined
 
     return (
         <>
@@ -338,7 +341,7 @@ const Home: NextPage = () => {
                             <CircularProgress color="primary" size="lg" />
                         </Box>
                     )}
-                    {activeUrl ? (
+                    {activeUrl && !isExtensionInstallPending ? (
                         <Browser url={activeUrl} enabled={isExtensionInstalled} onLoad={onIframeLoad} />
                     ) : (
                         <Box
