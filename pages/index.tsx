@@ -1,3 +1,4 @@
+import { ClassNames } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Portal from '@mui/base/Portal'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
@@ -20,6 +21,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Controller, useController, useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import Browser from '../components/Browser'
 import Layout from '../components/Layout'
 import { EScraperMessageType, TScraperConfig, TScraperMessage, TScraperSelector } from '../types'
 
@@ -122,6 +124,69 @@ const Home: NextPage = () => {
         }
     }, [])
 
+    const [extensionPort, setExtensionPort] = useState<chrome.runtime.Port | null | undefined>()
+
+    useEffect(() => {
+        let mounted = true
+        const extensionId = process.env.NEXT_PUBLIC_EXTENSION_CHROME_ID
+
+        if (!extensionId) {
+            return
+        }
+
+        let port: chrome.runtime.Port
+
+        const handleExtensionConnection = async () => {
+            while (true) {
+                if (!mounted) {
+                    return
+                }
+
+                const browser = window.chrome
+
+                if (browser?.runtime?.connect) {
+                    try {
+                        port = browser.runtime.connect(extensionId)
+
+                        if (port) {
+                            port.onMessage.addListener(response => {
+                                if (response && response.type === 'init' && response.ok) {
+                                    setExtensionPort(port)
+                                }
+                            })
+
+                            await new Promise(resolve => {
+                                port.onDisconnect.addListener(() => {
+                                    setExtensionPort(null)
+
+                                    resolve(true)
+                                })
+                            })
+                        }
+                    } catch (error) {
+                        console.error('Extension connect error', error)
+
+                        setExtensionPort(null)
+                    }
+                }
+
+                await new Promise(resolve => {
+                    setTimeout(resolve, 1000)
+                })
+            }
+        }
+
+        handleExtensionConnection()
+
+        return () => {
+            mounted = false
+
+            if (port) {
+                port.disconnect()
+            }
+        }
+    }, [])
+
     const onSubmit = handleSubmit(values => {
         setActiveUrl(current => {
             setIframeLoading(current !== values.url)
@@ -134,6 +199,8 @@ const Home: NextPage = () => {
     const onIframeLoad = useCallback(() => {
         setIframeLoading(false)
     }, [])
+    const isExtensionInstalled = !!extensionPort
+    const isExtensionInstallPending = typeof extensionPort === undefined
 
     return (
         <>
@@ -257,7 +324,7 @@ const Home: NextPage = () => {
                         position: 'relative'
                     }}
                 >
-                    {isIframeLoading && (
+                    {isIframeLoading && isExtensionInstalled && (
                         <Box
                             sx={{
                                 position: 'absolute',
@@ -274,17 +341,8 @@ const Home: NextPage = () => {
                             <CircularProgress color="primary" size="lg" />
                         </Box>
                     )}
-                    {activeUrl ? (
-                        <iframe
-                            tabIndex={-1}
-                            src={activeUrl}
-                            id="vscraper"
-                            sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts"
-                            width="100%"
-                            height="100%"
-                            frameBorder={0}
-                            onLoad={onIframeLoad}
-                        ></iframe>
+                    {activeUrl && !isExtensionInstallPending ? (
+                        <Browser url={activeUrl} enabled={isExtensionInstalled} onLoad={onIframeLoad} />
                     ) : (
                         <Box
                             sx={{
@@ -301,6 +359,7 @@ const Home: NextPage = () => {
 
                             <Typography
                                 level="h1"
+                                textAlign="center"
                                 sx={{
                                     marginTop: 5,
                                     marginBottom: 2
@@ -342,6 +401,7 @@ const Home: NextPage = () => {
 
                             <Typography
                                 level="h3"
+                                textAlign="center"
                                 sx={{
                                     marginBottom: 2
                                 }}
