@@ -41,7 +41,12 @@
     "webExt": {
         "sourceDir": "./extension",
         "ignoreFiles": [
-            "_metadata"
+            "_metadata",
+            "package.json"
         ]
-    }
+    },
+    "workspaces": [
+        "extension",
+        "cli"
+    ]
 }
