@@ -2,11 +2,16 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import Portal from '@mui/base/Portal'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import SendIcon from '@mui/icons-material/Send'
+import TabIcon from '@mui/icons-material/Tab'
 import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
 import CircularProgress from '@mui/joy/CircularProgress'
+import List from '@mui/joy/List'
+import ListItem from '@mui/joy/ListItem'
+import ListItemDecorator from '@mui/joy/ListItemDecorator'
 import Sheet from '@mui/joy/Sheet'
 import TextField from '@mui/joy/TextField'
+import Typography from '@mui/joy/Typography'
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,7 +19,6 @@ import { Controller, useController, useFieldArray, useForm } from 'react-hook-fo
 import { z } from 'zod'
 
 import Layout from '../components/Layout'
-import styles from '../styles/Home.module.css'
 import { EScraperMessageType, TScraperConfig, TScraperMessage, TScraperSelector } from '../types'
 
 const schema = z.object({
@@ -125,6 +129,9 @@ const Home: NextPage = () => {
     })
 
     const { fields } = selectorsField
+    const onIframeLoad = useCallback(() => {
+        setIframeLoading(false)
+    }, [])
 
     return (
         <>
@@ -255,18 +262,89 @@ const Home: NextPage = () => {
                             <CircularProgress color="primary" size="lg" />
                         </Box>
                     )}
-                    <iframe
-                        tabIndex={-1}
-                        src={activeUrl}
-                        id="vscraper"
-                        sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts"
-                        width="100%"
-                        height="100%"
-                        frameBorder={0}
-                        onLoad={useCallback(() => {
-                            setIframeLoading(false)
-                        }, [])}
-                    ></iframe>
+                    {activeUrl ? (
+                        <iframe
+                            tabIndex={-1}
+                            src={activeUrl}
+                            id="vscraper"
+                            sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts"
+                            width="100%"
+                            height="100%"
+                            frameBorder={0}
+                            onLoad={onIframeLoad}
+                        ></iframe>
+                    ) : (
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                flexDirection: 'column',
+                                fontSize: '100px',
+                                flex: 1
+                            }}
+                        >
+                            <TabIcon fontSize="inherit" color="primary" />
+
+                            <Typography
+                                level="h1"
+                                sx={{
+                                    marginTop: 5,
+                                    marginBottom: 2
+                                }}
+                            >
+                                Welcome to Visual Scraper
+                            </Typography>
+
+                            <Typography
+                                level="body1"
+                                sx={{
+                                    marginBottom: 5
+                                }}
+                            >
+                                We Jawa are here to help you scrape content from any website quick and easy.
+                            </Typography>
+
+                            <Typography
+                                level="h3"
+                                sx={{
+                                    marginBottom: 2
+                                }}
+                            >
+                                How it works?
+                            </Typography>
+                            <List
+                                component="ol"
+                                size="sm"
+                                sx={{
+                                    listStyleType: 'decimal',
+                                    flex: 0,
+                                    marginBottom: 5
+                                }}
+                            >
+                                <ListItem>
+                                    <ListItemDecorator>⌨</ListItemDecorator>Type a URL
+                                </ListItem>
+                                <ListItem>
+                                    <ListItemDecorator>👈</ListItemDecorator>Click on any element to select them
+                                </ListItem>
+                                <ListItem>
+                                    <ListItemDecorator>😎</ListItemDecorator>Adjust selectors or add custom labels (if
+                                    needed)
+                                </ListItem>
+                                <ListItem>
+                                    <ListItemDecorator>🚀</ListItemDecorator>Run it!
+                                </ListItem>
+                                <ListItem>
+                                    <ListItemDecorator>✅</ListItemDecorator>Collect your data!
+                                </ListItem>
+                            </List>
+
+                            <Typography level="body1" component="em">
+                                ~ Utinni!
+                            </Typography>
+                        </Box>
+                    )}
                 </Layout.Main>
             </Layout.Container>
         </>
