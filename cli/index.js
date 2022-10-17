@@ -65,7 +65,7 @@ yargsInstance(hideBin(process.argv))
         builder: yargs => {
             yargs.positional('configPath', {
                 describe:
-                    'path to JSON config file, use visual scraper on https://vscraper.kickass.codes or create it yourself'
+                    'path to JSON config file, use visual scraper on https://jawa.kickass.codes or create it yourself'
             })
         },
         handler: argv => {

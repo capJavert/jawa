@@ -10,7 +10,7 @@
         ]
     },
     "manifest_version": 3,
-    "name": "VScraper",
+    "name": "Jawa - Visual Scraper",
     "web_accessible_resources": [
         {
             "resources": [
@@ -48,6 +48,6 @@
     "host_permissions": [
         "<all_urls>"
     ],
-    "short_name": "VScraper",
+    "short_name": "Jawa",
     "version": "0.0.1"
 }
