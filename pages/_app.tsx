@@ -20,7 +20,7 @@ const App = ({ Component, pageProps }: AppProps) => {
             <DefaultSeo
                 defaultTitle="Jawa - Visual Scraper"
                 titleTemplate="Jawa | %s"
-                description="Visual scraper interface, exports do puppeteer script which you can run anywhere!"
+                description="Visual scraper interface, exports to puppeteer script which you can run anywhere!"
                 openGraph={{
                     images: []
                 }}
