@@ -6,7 +6,8 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "lint": "next lint"
+        "lint": "next lint",
+        "build:extension": "web-ext build --source-dir ./extension"
     },
     "dependencies": {
         "@emotion/react": "^11.10.4",
@@ -30,9 +31,16 @@
         "eslint-config-prettier": "^8.5.0",
         "eslint-plugin-prettier": "^4.2.1",
         "eslint-plugin-simple-import-sort": "^8.0.0",
-        "typescript": "4.8.4"
+        "typescript": "4.8.4",
+        "web-ext": "^7.3.0"
     },
     "volta": {
         "node": "16.17.1"
+    },
+    "webExt": {
+        "sourceDir": "./extension",
+        "ignoreFiles": [
+            "_metadata"
+        ]
     }
 }

@@ -42,7 +42,6 @@
         ]
     },
     "permissions": [
-        "activeTab",
         "declarativeNetRequest"
     ],
     "host_permissions": [
