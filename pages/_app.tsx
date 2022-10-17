@@ -15,54 +15,52 @@ import theme from '../theme'
 
 function MyApp({ Component, pageProps }: AppProps) {
     return (
-        <CssVarsProvider>
-            <CssVarsProvider disableTransitionOnChange theme={theme}>
-                <GlobalStyles<Theme>
-                    styles={theme => ({
-                        body: {
-                            margin: 0,
-                            fontFamily: theme.vars.fontFamily.body
-                        }
-                    })}
-                />
-                <Layout.Container>
-                    <Layout.Header>
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                gap: 1.5
-                            }}
+        <CssVarsProvider disableTransitionOnChange theme={theme} defaultMode="system">
+            <GlobalStyles<Theme>
+                styles={theme => ({
+                    body: {
+                        margin: 0,
+                        fontFamily: theme.vars.fontFamily.body
+                    }
+                })}
+            />
+            <Layout.Container>
+                <Layout.Header>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 1.5
+                        }}
+                    >
+                        <IconButton
+                            tabIndex={-1}
+                            size="sm"
+                            variant="solid"
+                            sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
                         >
-                            <IconButton
-                                tabIndex={-1}
-                                size="sm"
-                                variant="solid"
-                                sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-                            >
-                                <FaceIcon />
-                            </IconButton>
-                            <Typography component="h1" fontWeight="xl">
-                                JAWA visual scraper
-                            </Typography>
-                        </Box>
-                        <Box
-                            id="header-top-bar"
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                flexBasis: 600
-                            }}
-                        />
-                        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.5 }}>
-                            <ColorSchemeToggle />
-                        </Box>
-                    </Layout.Header>
-                    <Component {...pageProps} />
-                </Layout.Container>
-            </CssVarsProvider>
+                            <FaceIcon />
+                        </IconButton>
+                        <Typography component="h1" fontWeight="xl">
+                            JAWA visual scraper
+                        </Typography>
+                    </Box>
+                    <Box
+                        id="header-top-bar"
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            flexBasis: 600
+                        }}
+                    />
+                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.5 }}>
+                        <ColorSchemeToggle />
+                    </Box>
+                </Layout.Header>
+                <Component {...pageProps} />
+            </Layout.Container>
         </CssVarsProvider>
     )
 }
