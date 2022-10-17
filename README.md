@@ -1,34 +1,33 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Jawa - Visual Scraper
 
-## Getting Started
+![DALL·E 2022-10-17 03 53 08 (2)](https://user-images.githubusercontent.com/9803078/196301040-1f1f34b4-e983-4cd8-859b-951b7fa51068.png)
 
-First, run the development server:
+Visual scraper interface, exports to puppeteer script which you can run anywhere. You can try it out here https://jawa.kickass.codes
 
-```bash
-npm run dev
-# or
-yarn dev
+Jawa allows you to visually click elements of any website and then export selectors as a config that you can run in any node environment to scrape the content when needed.
+
+This repo consists of the:
+- web app
+- cli
+- browser extension
+
+## Web app
+
+Web app that provides embedded browser for visually selecting elements and creating the scrapper config that you can download and run through the CLI.
+
+## CLI
+
+Simple CLI to run configs created and exported from web app. You can run it like this:
+
+```
+npx jawa path/to/scraper/config/file.json
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+or `npx jawa --help` to see all the options.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Browser extension
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+Browser extension that runs the embedded browser which powers the visual scraper interface. 
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+It is available on:
+- [Chrome Web Store](https://chrome.google.com/webstore/detail/jawa-visual-scraper/icjgianfpiifbdpddkadmpcegiffiglk)
