@@ -29,12 +29,26 @@ import Browser from '../components/Browser'
 import Layout from '../components/Layout'
 import { EScraperMessageType, TScraperConfig, TScraperMessage, TScraperSelector } from '../types'
 
+const urlRegex =
+    /^https:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,63}\.[a-zA-Z0-9()]{1,63}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/
+const httpRegex = /https?/
+const urlSchema = z.preprocess(value => {
+    if (!value || typeof value !== 'string') {
+        return ''
+    }
+
+    if (!httpRegex.test(value)) {
+        return `https://${value}`
+    }
+
+    return value
+}, z.string().regex(urlRegex, { message: 'Invalid URL' }).min(1, { message: 'Required' }))
 const selectorItemSchema = z.object({
-    url: z.string().min(1, { message: 'Required' }),
+    url: urlSchema,
     selector: z.string().min(1, { message: 'Required' })
 })
 const schema = z.object({
-    url: z.string().url({ message: 'Invalid URL' }).min(1, { message: 'Required' }),
+    url: urlSchema,
     items: z.array(selectorItemSchema)
 })
 
@@ -68,13 +82,17 @@ const Home: NextPage = () => {
     const [isIframeLoading, setIframeLoading] = useState(false)
 
     useEffect(() => {
-        if (queryUrl && schema.safeParse({ url: queryUrl }).success) {
-            setActiveUrl(current => {
-                setIframeLoading(current !== queryUrl)
+        if (queryUrl) {
+            const parsedUrl = urlSchema.safeParse(queryUrl)
 
-                return queryUrl as string
-            })
-            urlController.field.onChange(queryUrl as string)
+            if (parsedUrl.success) {
+                setActiveUrl(current => {
+                    setIframeLoading(current !== parsedUrl.data)
+
+                    return parsedUrl.data
+                })
+                urlController.field.onChange(queryUrl as string)
+            }
 
             const { url: _url, ...restQuery } = router.query
 
@@ -329,7 +347,6 @@ const Home: NextPage = () => {
                                     render={({ field, fieldState }) => {
                                         return (
                                             <TextField
-                                                ref={field.ref}
                                                 error={!!fieldState.error}
                                                 size="sm"
                                                 name={`items.${index}.selector`}
