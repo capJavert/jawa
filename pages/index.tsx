@@ -1,6 +1,7 @@
 import { ClassNames } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Portal from '@mui/base/Portal'
+import EditIcon from '@mui/icons-material/Edit'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import SendIcon from '@mui/icons-material/Send'
 import TabIcon from '@mui/icons-material/Tab'
@@ -10,6 +11,7 @@ import Alert from '@mui/joy/Alert'
 import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
 import CircularProgress from '@mui/joy/CircularProgress'
+import IconButton from '@mui/joy/IconButton'
 import List from '@mui/joy/List'
 import ListItem from '@mui/joy/ListItem'
 import ListItemDecorator from '@mui/joy/ListItemDecorator'
@@ -27,8 +29,13 @@ import Browser from '../components/Browser'
 import Layout from '../components/Layout'
 import { EScraperMessageType, TScraperConfig, TScraperMessage, TScraperSelector } from '../types'
 
+const selectorItemSchema = z.object({
+    url: z.string().min(1, { message: 'Required' }),
+    selector: z.string().min(1, { message: 'Required' })
+})
 const schema = z.object({
-    url: z.string().url({ message: 'Invalid URL' }).min(1, { message: 'Required' })
+    url: z.string().url({ message: 'Invalid URL' }).min(1, { message: 'Required' }),
+    items: z.array(selectorItemSchema)
 })
 
 const getPortalContainer = (() => () => {
@@ -94,11 +101,7 @@ const Home: NextPage = () => {
                         payload: { url, selector }
                     } = event.data as TScraperMessage<TScraperSelector>
 
-                    if (!selector) {
-                        return
-                    }
-
-                    if (!schema.safeParse({ url }).success) {
+                    if (!selectorItemSchema.safeParse({ url, selector }).success) {
                         return
                     }
 
@@ -234,7 +237,7 @@ const Home: NextPage = () => {
                             color="neutral"
                             endDecorator={<SendIcon />}
                             disabled={fields.length === 0}
-                            onClick={() => {
+                            onClick={handleSubmit(() => {
                                 const aElement = document.createElement('a')
                                 aElement.setAttribute('download', `vscraper-${Date.now()}.json`)
                                 const href = URL.createObjectURL(
@@ -257,7 +260,7 @@ const Home: NextPage = () => {
 
                                 // TODO present modal with run instructions
                                 // add do not show again button
-                            }}
+                            })}
                         >
                             Run it
                         </Button>
@@ -311,7 +314,7 @@ const Home: NextPage = () => {
                             flex: 1
                         }}
                     >
-                        {fields.map(field => (
+                        {fields.map((field, index) => (
                             <Sheet
                                 key={field.id}
                                 variant="soft"
@@ -320,7 +323,42 @@ const Home: NextPage = () => {
                                     marginBottom: 1
                                 }}
                             >
-                                {field.selector}
+                                <Controller
+                                    name={`items.${index}.selector`}
+                                    control={control}
+                                    render={({ field, fieldState }) => {
+                                        return (
+                                            <TextField
+                                                ref={field.ref}
+                                                error={!!fieldState.error}
+                                                size="sm"
+                                                name={`items.${index}.selector`}
+                                                placeholder="Selector"
+                                                endDecorator={
+                                                    <IconButton
+                                                        variant="plain"
+                                                        color="neutral"
+                                                        onClick={() => {
+                                                            const element = document.querySelector<HTMLInputElement>(
+                                                                `input[name="items.${index}.selector"]`
+                                                            )
+
+                                                            if (element) {
+                                                                element.focus()
+                                                            }
+                                                        }}
+                                                    >
+                                                        <EditIcon />
+                                                    </IconButton>
+                                                }
+                                                variant="soft"
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                onBlur={field.onBlur}
+                                            />
+                                        )
+                                    }}
+                                />
                             </Sheet>
                         ))}
                     </Layout.Container>
