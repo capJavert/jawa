@@ -5,6 +5,7 @@ import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import SendIcon from '@mui/icons-material/Send'
 import TabIcon from '@mui/icons-material/Tab'
 import WarningIcon from '@mui/icons-material/Warning'
+import { Theme } from '@mui/joy'
 import Alert from '@mui/joy/Alert'
 import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
@@ -15,6 +16,7 @@ import ListItemDecorator from '@mui/joy/ListItemDecorator'
 import Sheet from '@mui/joy/Sheet'
 import TextField from '@mui/joy/TextField'
 import Typography from '@mui/joy/Typography'
+import useMediaQuery from '@mui/material/useMediaQuery'
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -201,6 +203,7 @@ const Home: NextPage = () => {
     }, [])
     const isExtensionInstalled = !!extensionPort
     const isExtensionInstallPending = typeof extensionPort === undefined
+    const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))
 
     return (
         <>
@@ -289,7 +292,10 @@ const Home: NextPage = () => {
             <Layout.Container
                 flexDirection="row"
                 sx={{
-                    height: '100vh'
+                    height: {
+                        xs: 'calc(100vh - 81px)',
+                        md: 'calc(100vh - 65px)'
+                    }
                 }}
             >
                 <Layout.Side
@@ -341,7 +347,7 @@ const Home: NextPage = () => {
                             <CircularProgress color="primary" size="lg" />
                         </Box>
                     )}
-                    {activeUrl && !isExtensionInstallPending ? (
+                    {activeUrl && !isExtensionInstallPending && !isMobile ? (
                         <Browser url={activeUrl} enabled={isExtensionInstalled} onLoad={onIframeLoad} />
                     ) : (
                         <Box

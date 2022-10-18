@@ -43,12 +43,7 @@ const App = ({ Component, pageProps }: AppProps) => {
                             gap: 1.5
                         }}
                     >
-                        <IconButton
-                            tabIndex={-1}
-                            size="sm"
-                            variant="solid"
-                            sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-                        >
+                        <IconButton tabIndex={-1} size="sm" variant="solid" sx={{ display: 'inline-flex' }}>
                             <FaceIcon />
                         </IconButton>
                         <Typography component="h1" fontWeight="xl">

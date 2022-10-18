@@ -63,11 +63,12 @@ const Browser = ({ url, enabled = true, onLoad }: { url: string; enabled: boolea
                 <Typography
                     level="body1"
                     sx={{
-                        marginBottom: 5
+                        marginBottom: 5,
+                        maxWidth: '700px'
                     }}
                 >
-                    Our companion extension is required so we can load other websites inside your browser
-                    <br /> and allow you to scrape them.
+                    Our companion extension is required so we can load other websites inside your browser and allow you
+                    to scrape them.
                 </Typography>
 
                 <Link href={downloadLink} passHref>
