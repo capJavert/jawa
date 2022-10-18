@@ -292,7 +292,7 @@ const Home: NextPage = () => {
             <Layout.Container
                 flexDirection="row"
                 sx={{
-                    height: {
+                    minHeight: {
                         xs: 'calc(100vh - 81px)',
                         md: 'calc(100vh - 65px)'
                     }
