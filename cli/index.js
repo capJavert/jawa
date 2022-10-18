@@ -10,6 +10,8 @@ const scrape = async (configPath, options) => {
 
     console.log('Loaded config')
 
+    console.log('Starting headless browser')
+
     const browser = await puppeteer.launch()
     const page = await browser.newPage()
     page.emulate({
