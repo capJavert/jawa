@@ -20,3 +20,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 chrome.runtime.onConnectExternal.addListener(port => {
     port.postMessage({ type: 'init', ok: true })
 })
+
+chrome.runtime.onInstalled.addListener(details => {
+    if (details.reason === 'install') {
+        chrome.tabs.create({
+            url: 'https://jawa.kickass.codes',
+            active: true
+        })
+    }
+})

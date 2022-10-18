@@ -72,12 +72,7 @@ const Browser = ({ url, enabled = true, onLoad }: { url: string; enabled: boolea
                 </Typography>
 
                 <Link href={downloadLink} passHref>
-                    <Button
-                        component="a"
-                        target="_blank"
-                        startDecorator={<ChromeIcon width={30} height={30} />}
-                        size="lg"
-                    >
+                    <Button component="a" startDecorator={<ChromeIcon width={30} height={30} />} size="lg">
                         Add to Chrome
                     </Button>
                 </Link>
