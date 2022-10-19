@@ -146,15 +146,22 @@ const DownloadModal = ({
                 </Typography>
 
                 <TextField
-                    sx={{
+                    sx={theme => ({
                         marginBottom: 2,
                         '& .JoyInput-root.Joy-focused:before': {
                             boxShadow: 'none'
                         },
-                        '& .JoyInput-root:hover': {
-                            borderColor: 'var(--joy-palette-info-700) !important'
+                        [theme.getColorSchemeSelector('dark')]: {
+                            '& .JoyInput-root:hover': {
+                                borderColor: 'var(--joy-palette-info-700) !important'
+                            }
+                        },
+                        [theme.getColorSchemeSelector('light')]: {
+                            '& .JoyInput-root:hover:not(.Joy-focused)': {
+                                borderColor: 'var(--joy-palette-info-outlinedBorder) !important'
+                            }
                         }
-                    }}
+                    })}
                     componentsProps={{
                         input: {
                             readOnly: true
