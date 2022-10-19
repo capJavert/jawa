@@ -42,9 +42,19 @@ const scrape = async (configPath, options) => {
                 console.log('Find selector', item.selector)
             }
 
+            let scrapedData = await page.$$eval(item.selector, elements =>
+                elements.map(element => ({
+                    textContent: element.textContent
+                }))
+            )
+
+            if (scrapedData.length < 2) {
+                scrapedData = scrapedData[0] || null
+            }
+
             return {
                 selector: item.selector,
-                textContent: await page.$eval(item.selector, element => element.textContent)
+                data: scrapedData
             }
         })
     )
