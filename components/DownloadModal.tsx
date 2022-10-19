@@ -130,6 +130,7 @@ const DownloadModal = ({
                     sx={{
                         marginBottom: 2
                     }}
+                    title="Download config"
                     onClick={onSubmit}
                 >
                     Download config

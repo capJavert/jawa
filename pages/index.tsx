@@ -1,6 +1,7 @@
 import { ClassNames } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Portal from '@mui/base/Portal'
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import EditIcon from '@mui/icons-material/Edit'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import SendIcon from '@mui/icons-material/Send'
@@ -268,15 +269,14 @@ const Home: NextPage = () => {
             {!isMobile && (
                 <DownloadModal
                     download={downloadPending}
-                    onSubmit={() => {
+                    onSubmit={handleSubmit(values => {
                         const aElement = document.createElement('a')
                         aElement.setAttribute('download', `vscraper-config-${downloadPending}.json`)
                         const href = URL.createObjectURL(
                             new Blob(
                                 [
                                     JSON.stringify({
-                                        url: activeUrl,
-                                        items: fields
+                                        items: values.items
                                     })
                                 ],
                                 {
@@ -288,7 +288,7 @@ const Home: NextPage = () => {
                         aElement.setAttribute('target', '_blank')
                         aElement.click()
                         URL.revokeObjectURL(href)
-                    }}
+                    })}
                     onClose={() => {
                         setDownloadPending(false)
                     }}
@@ -321,6 +321,7 @@ const Home: NextPage = () => {
                             color="neutral"
                             endDecorator={<SendIcon />}
                             disabled={fields.length === 0 || !formState.isValid}
+                            title="Run it"
                             onClick={handleSubmit(() => {
                                 setDownloadPending(Date.now())
                             })}
@@ -397,21 +398,38 @@ const Home: NextPage = () => {
                                                 name={`items.${index}.selector`}
                                                 placeholder="Selector"
                                                 endDecorator={
-                                                    <IconButton
-                                                        variant="plain"
-                                                        color="neutral"
-                                                        onClick={() => {
-                                                            const element = document.querySelector<HTMLInputElement>(
-                                                                `input[name="items.${index}.selector"]`
-                                                            )
+                                                    <>
+                                                        <IconButton
+                                                            variant="plain"
+                                                            color="neutral"
+                                                            title="Edit item"
+                                                            onClick={() => {
+                                                                const element =
+                                                                    document.querySelector<HTMLInputElement>(
+                                                                        `input[name="items.${index}.selector"]`
+                                                                    )
 
-                                                            if (element) {
-                                                                element.focus()
-                                                            }
-                                                        }}
-                                                    >
-                                                        <EditIcon />
-                                                    </IconButton>
+                                                                if (element) {
+                                                                    element.focus()
+                                                                }
+                                                            }}
+                                                        >
+                                                            <EditIcon />
+                                                        </IconButton>
+                                                        <IconButton
+                                                            sx={{
+                                                                marginLeft: 2
+                                                            }}
+                                                            variant="plain"
+                                                            color="neutral"
+                                                            title="Remove item"
+                                                            onClick={() => {
+                                                                selectorsField.remove(index)
+                                                            }}
+                                                        >
+                                                            <DeleteForeverIcon />
+                                                        </IconButton>
+                                                    </>
                                                 }
                                                 variant="soft"
                                                 value={field.value}

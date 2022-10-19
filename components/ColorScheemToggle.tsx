@@ -22,6 +22,7 @@ const ColorSchemeToggle = () => {
             size="sm"
             variant="outlined"
             color="primary"
+            title={`Toggle ${mode === 'light' ? 'dark' : 'light'} mode`}
             onClick={() => {
                 if (mode === 'light') {
                     setMode('dark')

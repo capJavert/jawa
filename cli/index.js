@@ -1,63 +1,113 @@
 #!/usr/bin/env node
 const puppeteer = require('puppeteer')
+const { options } = require('yargs')
 const fs = require('fs').promises
 const yargsInstance = require('yargs')
 const { hideBin } = require('yargs/helpers')
 
 const scrape = async (configPath, options) => {
-    const jsonData = (await fs.readFile(configPath)).toString()
-    const config = JSON.parse(jsonData)
+    let browser
 
-    console.log('Loaded config')
-
-    console.log('Starting headless browser')
-
-    const browser = await puppeteer.launch()
-    const page = await browser.newPage()
-    page.emulate({
-        name: 'Desktop',
-        userAgent:
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36',
-        viewport: {
-            width: 1600,
-            height: 900
+    const logger = (level, ...args) => {
+        if (!options.quiet) {
+            console[level](...args)
         }
-    })
-
-    if (!config.url) {
-        throw new Error('Config invalid, missing url')
     }
 
-    if (!Array.isArray(config.items)) {
-        throw new Error('Config invalid, Array expected for items')
-    }
+    try {
+        const jsonData = (await fs.readFile(configPath)).toString()
+        const config = JSON.parse(jsonData)
 
-    console.log('Scraping URL', config.url)
+        logger('log', 'Loaded config')
 
-    await page.goto(config.url)
+        logger('log', 'Starting headless browser')
 
-    const results = await Promise.allSettled(
-        config.items.map(async item => {
-            if (options.verbose) {
-                console.log('Find selector', item.selector)
-            }
-
-            return {
-                selector: item.selector,
-                textContent: await page.$eval(item.selector, element => element.textContent)
+        browser = await puppeteer.launch()
+        const page = await browser.newPage()
+        await page.emulate({
+            name: 'Desktop',
+            userAgent: options.userAgent,
+            viewport: {
+                width: 1600,
+                height: 900
             }
         })
-    )
 
-    await browser.close()
-
-    results.forEach(result => {
-        if (result.status === 'fulfilled') {
-            console.log(result.value)
-        } else {
-            console.error(result.reason)
+        if (!Array.isArray(config.items)) {
+            throw new Error('Config invalid, Array expected for items')
         }
-    })
+
+        logger('log', 'Scraping started')
+
+        const results = []
+
+        for (let i = 0; i < config.items.length; i += 1) {
+            const item = config.items[i]
+            try {
+                if (page.url() !== item.url) {
+                    await page.goto(item.url)
+
+                    logger('log', `Navigated to ${item.url}`)
+                }
+
+                logger('log', 'Looking for selector', item.selector)
+
+                let scrapedData = await page.$$eval(item.selector, elements =>
+                    elements.map(element => ({
+                        tag: element.tagName?.toLowerCase() || undefined,
+                        elementId: element.id || undefined,
+                        className: element.className || undefined,
+                        title: element.title || undefined,
+                        alt: element.getAttribute('alt') || undefined,
+                        dataAttributes:
+                            Object.keys(element.dataset || {}).length > 0
+                                ? {
+                                      ...element.dataset
+                                  }
+                                : undefined,
+                        textContent: element.textContent
+                    }))
+                )
+
+                if (scrapedData.length < 2) {
+                    scrapedData = scrapedData[0] || null
+                }
+
+                results.push({
+                    type: 'result',
+                    url: item.url,
+                    selector: item.selector,
+                    data: scrapedData
+                })
+            } catch (error) {
+                if (options.verbose) {
+                    logger('error', error)
+                } else {
+                    logger('error', `Scraping error: ${error.message}`)
+                }
+
+                results.push({
+                    type: 'error',
+                    url: item.url,
+                    error: error.message
+                })
+            }
+        }
+
+        logger('log', 'Done!')
+
+        console.log(JSON.stringify(results, null, options.indentSize))
+    } catch (error) {
+        if (options.verbose) {
+            console.error(error)
+        } else {
+            console.error(`Error: ${error.message}`)
+        }
+    } finally {
+        if (browser) {
+            await browser.close()
+        }
+    }
 }
 
 yargsInstance(hideBin(process.argv))
@@ -71,7 +121,12 @@ yargsInstance(hideBin(process.argv))
             })
         },
         handler: argv => {
-            scrape(argv.configPath, { verbose: argv.verbose })
+            scrape(argv.configPath, {
+                verbose: argv.verbose,
+                quiet: argv.quiet,
+                userAgent: argv.userAgent,
+                indentSize: argv.indentSize
+            })
         }
     })
     .option('verbose', {
@@ -79,5 +134,23 @@ yargsInstance(hideBin(process.argv))
         type: 'boolean',
         description: 'Run with verbose logging',
         default: false
+    })
+    .option('quiet', {
+        alias: 'q',
+        type: 'boolean',
+        description: 'Do not log any messages except the final scraping results',
+        default: false
+    })
+    .option('user-agent', {
+        alias: 'ua',
+        type: 'string',
+        description: 'Set user agent to be used during scraping',
+        default:
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 JawaVS'
+    })
+    .option('indent-size', {
+        type: 'number',
+        description: 'Set results indent size',
+        default: 4
     })
     .parse()

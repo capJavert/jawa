@@ -1,6 +1,6 @@
 {
     "name": "jawa",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Visual scraper interface, exports to puppeteer script which you can run anywhere.",
     "main": "index.js",
     "scripts": {
