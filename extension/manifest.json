@@ -49,5 +49,11 @@
         "<all_urls>"
     ],
     "short_name": "Jawa",
-    "version": "0.0.3"
+    "version": "0.0.3",
+    "icons": {
+        "16": "assets/jawa-icon-16.png",
+        "32": "assets/jawa-icon-32.png",
+        "48": "assets/jawa-icon-48.png",
+        "128": "assets/jawa-icon-128.png"
+    }
 }

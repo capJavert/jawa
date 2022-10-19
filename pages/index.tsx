@@ -1,4 +1,3 @@
-import { ClassNames } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Portal from '@mui/base/Portal'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
@@ -498,7 +497,8 @@ const Home: NextPage = () => {
                                     marginBottom: 5
                                 }}
                             >
-                                We Jawa are here to help you scrape content from any website quick and easy.
+                                We <Typography color="info">Jawa</Typography> are here to help you scrape content from
+                                any website quick and easy.
                             </Typography>
 
                             <Alert
