@@ -65,7 +65,7 @@ const getPortalContainer = (() => () => {
 
 const Home: NextPage = () => {
     const router = useRouter()
-    const { control, handleSubmit } = useForm<TScraperConfig>({
+    const { control, handleSubmit, formState } = useForm<TScraperConfig>({
         resolver: zodResolver(schema),
         mode: 'onSubmit'
     })
@@ -285,7 +285,7 @@ const Home: NextPage = () => {
                             type="button"
                             color="neutral"
                             endDecorator={<SendIcon />}
-                            disabled={fields.length === 0}
+                            disabled={fields.length === 0 || !formState.isValid}
                             onClick={handleSubmit(() => {
                                 setDownloadPending(Date.now())
                             })}
