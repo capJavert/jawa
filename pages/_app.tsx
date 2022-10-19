@@ -1,11 +1,15 @@
 import '../styles/globals.css'
 
+import GitHubIcon from '@mui/icons-material/GitHub'
+import SportsBarIcon from '@mui/icons-material/SportsBar'
 import Box from '@mui/joy/Box'
+import IconButton from '@mui/joy/IconButton'
 import { Theme } from '@mui/joy/styles'
 import { CssVarsProvider } from '@mui/joy/styles'
 import Typography from '@mui/joy/Typography'
 import { GlobalStyles } from '@mui/system'
 import type { AppProps } from 'next/app'
+import Link from 'next/link'
 import { DefaultSeo } from 'next-seo'
 
 import ColorSchemeToggle from '../components/ColorScheemToggle'
@@ -69,6 +73,30 @@ const App = ({ Component, pageProps }: AppProps) => {
                         }}
                     />
                     <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.5 }}>
+                        <Link href="https://github.com/sponsors/capJavert" passHref>
+                            <IconButton
+                                component="a"
+                                size="sm"
+                                color="primary"
+                                variant="outlined"
+                                title="Buy Me a Beer"
+                                target="_blank"
+                            >
+                                <SportsBarIcon />
+                            </IconButton>
+                        </Link>
+                        <Link href="https://github.com/capJavert/jawa" passHref>
+                            <IconButton
+                                component="a"
+                                size="sm"
+                                color="primary"
+                                variant="outlined"
+                                title="GitHub"
+                                target="_blank"
+                            >
+                                <GitHubIcon />
+                            </IconButton>
+                        </Link>
                         <ColorSchemeToggle />
                     </Box>
                 </Layout.Header>
