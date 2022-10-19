@@ -58,6 +58,17 @@ const scrape = async (configPath, options) => {
 
                 let scrapedData = await page.$$eval(item.selector, elements =>
                     elements.map(element => ({
+                        tag: element.tagName?.toLowerCase() || undefined,
+                        elementId: element.id || undefined,
+                        className: element.className || undefined,
+                        title: element.title || undefined,
+                        alt: element.getAttribute('alt') || undefined,
+                        dataAttributes:
+                            Object.keys(element.dataset || {}).length > 0
+                                ? {
+                                      ...element.dataset
+                                  }
+                                : undefined,
                         textContent: element.textContent
                     }))
                 )
