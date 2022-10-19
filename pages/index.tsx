@@ -399,22 +399,38 @@ const Home: NextPage = () => {
                                                 name={`items.${index}.selector`}
                                                 placeholder="Selector"
                                                 endDecorator={
-                                                    <IconButton
-                                                        variant="plain"
-                                                        color="neutral"
-                                                        title="Edit item"
-                                                        onClick={() => {
-                                                            const element = document.querySelector<HTMLInputElement>(
-                                                                `input[name="items.${index}.selector"]`
-                                                            )
+                                                    <>
+                                                        <IconButton
+                                                            variant="plain"
+                                                            color="neutral"
+                                                            title="Edit item"
+                                                            onClick={() => {
+                                                                const element =
+                                                                    document.querySelector<HTMLInputElement>(
+                                                                        `input[name="items.${index}.selector"]`
+                                                                    )
 
-                                                            if (element) {
-                                                                element.focus()
-                                                            }
-                                                        }}
-                                                    >
-                                                        <EditIcon />
-                                                    </IconButton>
+                                                                if (element) {
+                                                                    element.focus()
+                                                                }
+                                                            }}
+                                                        >
+                                                            <EditIcon />
+                                                        </IconButton>
+                                                        <IconButton
+                                                            sx={{
+                                                                marginLeft: 2
+                                                            }}
+                                                            variant="plain"
+                                                            color="neutral"
+                                                            title="Remove item"
+                                                            onClick={() => {
+                                                                selectorsField.remove(index)
+                                                            }}
+                                                        >
+                                                            <DeleteForeverIcon />
+                                                        </IconButton>
+                                                    </>
                                                 }
                                                 variant="soft"
                                                 value={field.value}
