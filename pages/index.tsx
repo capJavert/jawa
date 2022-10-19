@@ -26,6 +26,7 @@ import { Controller, useController, useFieldArray, useForm } from 'react-hook-fo
 import { z } from 'zod'
 
 import Browser from '../components/Browser'
+import DownloadModal from '../components/DownloadModal'
 import Layout from '../components/Layout'
 import { EScraperMessageType, TScraperConfig, TScraperMessage, TScraperSelector } from '../types'
 
@@ -80,6 +81,7 @@ const Home: NextPage = () => {
     const urlController = useController({ name: 'url', control })
 
     const [isIframeLoading, setIframeLoading] = useState(false)
+    const [downloadPending, setDownloadPending] = useState<number | false>(false)
 
     useEffect(() => {
         if (queryUrl) {
@@ -228,6 +230,35 @@ const Home: NextPage = () => {
 
     return (
         <>
+            {!isMobile && (
+                <DownloadModal
+                    download={downloadPending}
+                    onSubmit={() => {
+                        const aElement = document.createElement('a')
+                        aElement.setAttribute('download', `vscraper-config-${downloadPending}.json`)
+                        const href = URL.createObjectURL(
+                            new Blob(
+                                [
+                                    JSON.stringify({
+                                        url: activeUrl,
+                                        items: fields
+                                    })
+                                ],
+                                {
+                                    type: 'application/json'
+                                }
+                            )
+                        )
+                        aElement.href = href
+                        aElement.setAttribute('target', '_blank')
+                        aElement.click()
+                        URL.revokeObjectURL(href)
+                    }}
+                    onClose={() => {
+                        setDownloadPending(false)
+                    }}
+                />
+            )}
             <form
                 onSubmit={onSubmit}
                 onKeyDown={event => {
@@ -256,28 +287,7 @@ const Home: NextPage = () => {
                             endDecorator={<SendIcon />}
                             disabled={fields.length === 0}
                             onClick={handleSubmit(() => {
-                                const aElement = document.createElement('a')
-                                aElement.setAttribute('download', `vscraper-${Date.now()}.json`)
-                                const href = URL.createObjectURL(
-                                    new Blob(
-                                        [
-                                            JSON.stringify({
-                                                url: activeUrl,
-                                                items: fields
-                                            })
-                                        ],
-                                        {
-                                            type: 'application/json'
-                                        }
-                                    )
-                                )
-                                aElement.href = href
-                                aElement.setAttribute('target', '_blank')
-                                aElement.click()
-                                URL.revokeObjectURL(href)
-
-                                // TODO present modal with run instructions
-                                // add do not show again button
+                                setDownloadPending(Date.now())
                             })}
                         >
                             Run it
