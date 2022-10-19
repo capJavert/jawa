@@ -453,7 +453,7 @@ const Home: NextPage = () => {
                                 textAlign: 'center'
                             }}
                         >
-                            {activeUrl && (
+                            {activeUrl && isExtensionInstalled && (
                                 <>
                                     <Box
                                         sx={{
