@@ -148,7 +148,13 @@ const DownloadModal = ({
 
                 <TextField
                     sx={{
-                        marginBottom: 2
+                        marginBottom: 2,
+                        '& .JoyInput-root.Joy-focused:before': {
+                            boxShadow: 'none'
+                        },
+                        '& .JoyInput-root:hover': {
+                            borderColor: 'var(--joy-palette-info-700) !important'
+                        }
                     }}
                     componentsProps={{
                         input: {
@@ -189,7 +195,7 @@ const DownloadModal = ({
                 />
 
                 <Typography level="body2" component="em">
-                    Note: make sure to adjust the path to the config file depending on your download folder location
+                    Note: adjust the path to the config file in your terminal depending on your download folder location
                 </Typography>
             </ModalDialog>
         </Modal>
