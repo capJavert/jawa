@@ -24,16 +24,30 @@ const DownloadModal = ({
 }) => {
     const downloadFolder = useMemo(() => {
         if (typeof window === 'undefined') {
-            return undefined
+            return ''
         }
 
         switch (true) {
             case platformDetect.macos:
             case platformDetect.linux:
-                return `~/Downloads/`
+                return '~/Downloads/'
             case platformDetect.windows: // TODO see if windows has common downloads location
             default:
                 return ''
+        }
+    }, [])
+    const shellSign = useMemo(() => {
+        if (typeof window === 'undefined') {
+            return ''
+        }
+
+        switch (true) {
+            case platformDetect.macos:
+            case platformDetect.linux:
+                return '$'
+            case platformDetect.windows:
+            default:
+                return '>'
         }
     }, [])
     const codeRunSnippet = `npx jawa ${downloadFolder}vscraper-config-${download}.json`
@@ -143,7 +157,12 @@ const DownloadModal = ({
                     }}
                     variant="outlined"
                     color="info"
-                    value={`$ ${codeRunSnippet}`}
+                    value={codeRunSnippet}
+                    startDecorator={
+                        <Typography color="info" level="inherit">
+                            {shellSign}
+                        </Typography>
+                    }
                     endDecorator={
                         <IconButton
                             sx={{
