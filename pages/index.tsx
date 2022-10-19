@@ -318,7 +318,7 @@ const Home: NextPage = () => {
                         <Button
                             size="sm"
                             type="button"
-                            color="neutral"
+                            color="info"
                             endDecorator={<SendIcon />}
                             disabled={fields.length === 0 || !formState.isValid}
                             title="Run it"
