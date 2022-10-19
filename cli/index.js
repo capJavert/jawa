@@ -33,10 +33,6 @@ const scrape = async (configPath, options) => {
             }
         })
 
-        if (!config.url) {
-            throw new Error('Config invalid, missing url')
-        }
-
         if (!Array.isArray(config.items)) {
             throw new Error('Config invalid, Array expected for items')
         }
