@@ -9,8 +9,8 @@ export type TScraperConfig = {
 }
 
 export enum EScraperMessageType {
-    init = 'init',
-    scrape = 'scrape'
+    init = 'jawa-init',
+    scrape = 'jawa-scrape'
 }
 
 export type TScraperMessage<Payload = Record<string, any>> = {

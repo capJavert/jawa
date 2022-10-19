@@ -4,8 +4,8 @@ const main = async () => {
     if (
         !isFrame ||
         !(await new Promise(resolve => {
-            chrome.runtime.sendMessage(chrome.runtime.id, { type: 'init' }, response => {
-                if (response && response.type === 'init' && typeof response.ok === 'boolean') {
+            chrome.runtime.sendMessage(chrome.runtime.id, { type: 'jawa-init' }, response => {
+                if (response && response.type === 'jawa-init' && typeof response.ok === 'boolean') {
                     resolve(response.ok)
                 } else {
                     resolve(false)
@@ -47,7 +47,7 @@ const main = async () => {
 
             window.top.postMessage(
                 {
-                    type: 'scrape',
+                    type: 'jawa-scrape',
                     payload: {
                         url: scraperData.url,
                         selector

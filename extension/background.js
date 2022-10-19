@@ -1,16 +1,16 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     switch (message.type) {
-        case 'init': {
+        case 'jawa-init': {
             if (sender.tab) {
                 const url = new URL(sender.tab.url)
                 const allowedHostNames = ['kickass.website', 'kickass.codes', 'kickass.ngrok.io', 'jawa.kickass.codes']
 
                 if (allowedHostNames.includes(url.hostname)) {
-                    return sendResponse({ type: 'init', ok: true })
+                    return sendResponse({ type: 'jawa-init', ok: true })
                 }
             }
 
-            return sendResponse({ type: 'init', ok: false })
+            return sendResponse({ type: 'jawa-init', ok: false })
         }
         default:
             break
@@ -18,7 +18,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 })
 
 chrome.runtime.onConnectExternal.addListener(port => {
-    port.postMessage({ type: 'init', ok: true })
+    port.postMessage({ type: 'jawa-init', ok: true })
 })
 
 chrome.runtime.onInstalled.addListener(details => {

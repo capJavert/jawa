@@ -176,7 +176,7 @@ const Home: NextPage = () => {
 
                         if (port) {
                             port.onMessage.addListener(response => {
-                                if (response && response.type === 'init' && response.ok) {
+                                if (response && response.type === EScraperMessageType.init && response.ok) {
                                     setExtensionPort(port)
                                 }
                             })
