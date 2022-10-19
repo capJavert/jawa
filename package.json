@@ -17,6 +17,7 @@
         "@mui/joy": "^5.0.0-alpha.49",
         "next": "12.3.1",
         "next-seo": "^5.6.0",
+        "platform-detect": "^3.0.1",
         "react": "18.2.0",
         "react-dom": "18.2.0",
         "react-hook-form": "^7.37.0",
