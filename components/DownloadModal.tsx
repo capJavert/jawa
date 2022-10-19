@@ -180,12 +180,16 @@ const DownloadModal = ({
                                         const element = document.getElementById('copy-command-button')
 
                                         if (element) {
-                                            let originalInnerText = element.innerText
-                                            element.innerText = 'Copied'
+                                            const newInnerText = 'Copied'
 
-                                            setTimeout(() => {
-                                                element.innerText = originalInnerText
-                                            }, 1000)
+                                            if (element.innerText !== newInnerText) {
+                                                let originalInnerText = element.innerText
+                                                element.innerText = newInnerText
+
+                                                setTimeout(() => {
+                                                    element.innerText = originalInnerText
+                                                }, 1000)
+                                            }
                                         }
                                     })
                                     .catch(console.error)
