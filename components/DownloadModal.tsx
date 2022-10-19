@@ -1,8 +1,6 @@
-import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import SendAndArchiveIcon from '@mui/icons-material/SendAndArchive'
 import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
-import IconButton from '@mui/joy/IconButton'
 import Modal from '@mui/joy/Modal'
 import ModalClose from '@mui/joy/ModalClose'
 import ModalDialog from '@mui/joy/ModalDialog'
@@ -170,27 +168,31 @@ const DownloadModal = ({
                         </Typography>
                     }
                     endDecorator={
-                        <IconButton
-                            sx={{
-                                cursor: 'pointer',
-                                color: '#ffffff',
-                                '&:hover': {
-                                    background: 'transparent !important',
-                                    color: '#ffffff'
-                                },
-                                '&:active': {
-                                    opacity: 0.6
-                                }
-                            }}
+                        <Button
+                            id="copy-command-button"
                             variant="plain"
                             color="neutral"
                             title="Copy"
                             onClick={() => {
-                                navigator.clipboard.writeText(codeRunSnippet).catch(console.error)
+                                navigator.clipboard
+                                    .writeText(codeRunSnippet)
+                                    .then(() => {
+                                        const element = document.getElementById('copy-command-button')
+
+                                        if (element) {
+                                            let originalInnerText = element.innerText
+                                            element.innerText = 'Copied'
+
+                                            setTimeout(() => {
+                                                element.innerText = originalInnerText
+                                            }, 1000)
+                                        }
+                                    })
+                                    .catch(console.error)
                             }}
                         >
-                            <ContentCopyIcon />
-                        </IconButton>
+                            Copy
+                        </Button>
                     }
                 />
 
