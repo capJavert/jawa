@@ -1,6 +1,7 @@
 import { ClassNames } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Portal from '@mui/base/Portal'
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import EditIcon from '@mui/icons-material/Edit'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import SendIcon from '@mui/icons-material/Send'
@@ -321,6 +322,7 @@ const Home: NextPage = () => {
                             color="neutral"
                             endDecorator={<SendIcon />}
                             disabled={fields.length === 0 || !formState.isValid}
+                            title="Run it"
                             onClick={handleSubmit(() => {
                                 setDownloadPending(Date.now())
                             })}
@@ -400,6 +402,7 @@ const Home: NextPage = () => {
                                                     <IconButton
                                                         variant="plain"
                                                         color="neutral"
+                                                        title="Edit item"
                                                         onClick={() => {
                                                             const element = document.querySelector<HTMLInputElement>(
                                                                 `input[name="items.${index}.selector"]`

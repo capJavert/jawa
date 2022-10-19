@@ -73,6 +73,7 @@ const Browser = ({ url, enabled = true, onLoad }: { url: string; enabled: boolea
 
                 <Link href={downloadLink} passHref>
                     <Button
+                        title="Add to Chrome"
                         onClick={() => {
                             if (url) {
                                 localStorage.setItem('saved-install-url', url)
