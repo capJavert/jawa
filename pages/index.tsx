@@ -76,7 +76,7 @@ const Home: NextPage = () => {
     const selectorsFieldRef = useRef(selectorsField)
     selectorsFieldRef.current = selectorsField
 
-    const { url: queryUrl } = router.query
+    const { url: queryUrl, extevent: queryEvent } = router.query
     const [activeUrl, setActiveUrl] = useState('')
     const urlController = useController({ name: 'url', control })
 
@@ -93,7 +93,7 @@ const Home: NextPage = () => {
 
                     return parsedUrl.data
                 })
-                urlController.field.onChange(queryUrl as string)
+                urlController.field.onChange(parsedUrl.data)
             }
 
             const { url: _url, ...restQuery } = router.query
@@ -212,6 +212,43 @@ const Home: NextPage = () => {
         }
     }, [])
 
+    const isExtensionInstalled = !!extensionPort
+    const isExtensionInstallPending = typeof extensionPort === undefined
+
+    useEffect(() => {
+        if (!isExtensionInstalled) {
+            return
+        }
+
+        if (queryEvent !== 'install') {
+            return
+        }
+
+        const savedInstallUrl = localStorage.getItem('saved-install-url')
+
+        if (savedInstallUrl) {
+            localStorage.removeItem('saved-install-url')
+
+            const parsedUrl = urlSchema.safeParse(savedInstallUrl)
+
+            if (parsedUrl.success) {
+                setActiveUrl(current => {
+                    setIframeLoading(current !== parsedUrl.data)
+
+                    return parsedUrl.data
+                })
+                urlController.field.onChange(parsedUrl.data)
+            }
+
+            const { extevent: _extevent, ...restQuery } = router.query
+
+            router.replace({
+                pathname: router.pathname,
+                query: restQuery
+            })
+        }
+    }, [isExtensionInstalled, queryEvent, urlController.field, router])
+
     const onSubmit = handleSubmit(values => {
         setActiveUrl(current => {
             setIframeLoading(current !== values.url)
@@ -224,8 +261,6 @@ const Home: NextPage = () => {
     const onIframeLoad = useCallback(() => {
         setIframeLoading(false)
     }, [])
-    const isExtensionInstalled = !!extensionPort
-    const isExtensionInstallPending = typeof extensionPort === undefined
     const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))
 
     return (

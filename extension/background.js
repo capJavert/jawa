@@ -24,7 +24,7 @@ chrome.runtime.onConnectExternal.addListener(port => {
 chrome.runtime.onInstalled.addListener(details => {
     if (details.reason === 'install') {
         chrome.tabs.create({
-            url: 'https://jawa.kickass.codes',
+            url: 'https://jawa.kickass.codes?extevent=install',
             active: true
         })
     }

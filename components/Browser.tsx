@@ -72,7 +72,16 @@ const Browser = ({ url, enabled = true, onLoad }: { url: string; enabled: boolea
                 </Typography>
 
                 <Link href={downloadLink} passHref>
-                    <Button component="a" startDecorator={<ChromeIcon width={30} height={30} />} size="lg">
+                    <Button
+                        onClick={() => {
+                            if (url) {
+                                localStorage.setItem('saved-install-url', url)
+                            }
+                        }}
+                        component="a"
+                        startDecorator={<ChromeIcon width={30} height={30} />}
+                        size="lg"
+                    >
                         Add to Chrome
                     </Button>
                 </Link>
