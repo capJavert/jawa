@@ -337,6 +337,7 @@ const Home: NextPage = () => {
                                     <TextField
                                         error={!!fieldState.error}
                                         size="sm"
+                                        autoFocus={process.env.NODE_ENV === 'production'}
                                         placeholder="Type a URL"
                                         startDecorator={<SearchRoundedIcon color="primary" />}
                                         value={field.value}
