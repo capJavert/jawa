@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import Portal from '@mui/base/Portal'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import EditIcon from '@mui/icons-material/Edit'
+import HighlightAltIcon from '@mui/icons-material/HighlightAlt'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import SendIcon from '@mui/icons-material/Send'
 import TabIcon from '@mui/icons-material/Tab'
@@ -372,75 +373,103 @@ const Home: NextPage = () => {
                         }
                     }}
                 >
-                    <Layout.Container
-                        sx={{
-                            flex: 1
-                        }}
-                    >
-                        {fields.map((field, index) => (
-                            <Sheet
-                                key={field.id}
-                                variant="soft"
-                                sx={{
-                                    p: 2,
-                                    marginBottom: 1
-                                }}
-                            >
-                                <Controller
-                                    name={`items.${index}.selector`}
-                                    control={control}
-                                    render={({ field, fieldState }) => {
-                                        return (
-                                            <TextField
-                                                error={!!fieldState.error}
-                                                size="sm"
-                                                name={`items.${index}.selector`}
-                                                placeholder="Selector"
-                                                endDecorator={
-                                                    <>
-                                                        <IconButton
-                                                            variant="plain"
-                                                            color="neutral"
-                                                            title="Edit item"
-                                                            onClick={() => {
-                                                                const element =
-                                                                    document.querySelector<HTMLInputElement>(
-                                                                        `input[name="items.${index}.selector"]`
-                                                                    )
-
-                                                                if (element) {
-                                                                    element.focus()
-                                                                }
-                                                            }}
-                                                        >
-                                                            <EditIcon />
-                                                        </IconButton>
-                                                        <IconButton
-                                                            sx={{
-                                                                marginLeft: 2
-                                                            }}
-                                                            variant="plain"
-                                                            color="neutral"
-                                                            title="Remove item"
-                                                            onClick={() => {
-                                                                selectorsField.remove(index)
-                                                            }}
-                                                        >
-                                                            <DeleteForeverIcon />
-                                                        </IconButton>
-                                                    </>
-                                                }
-                                                variant="soft"
-                                                value={field.value}
-                                                onChange={field.onChange}
-                                                onBlur={field.onBlur}
-                                            />
-                                        )
+                    {fields.length > 0 ? (
+                        <Layout.Container
+                            sx={{
+                                flex: 1
+                            }}
+                        >
+                            {fields.map((field, index) => (
+                                <Sheet
+                                    key={field.id}
+                                    variant="soft"
+                                    sx={{
+                                        p: 2,
+                                        marginBottom: 1
                                     }}
-                                />
-                            </Sheet>
-                        ))}
-                    </Layout.Container>
+                                >
+                                    <Controller
+                                        name={`items.${index}.selector`}
+                                        control={control}
+                                        render={({ field, fieldState }) => {
+                                            return (
+                                                <TextField
+                                                    error={!!fieldState.error}
+                                                    size="sm"
+                                                    name={`items.${index}.selector`}
+                                                    placeholder="Selector"
+                                                    endDecorator={
+                                                        <>
+                                                            <IconButton
+                                                                variant="plain"
+                                                                color="neutral"
+                                                                title="Edit item"
+                                                                onClick={() => {
+                                                                    const element =
+                                                                        document.querySelector<HTMLInputElement>(
+                                                                            `input[name="items.${index}.selector"]`
+                                                                        )
+
+                                                                    if (element) {
+                                                                        element.focus()
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <EditIcon />
+                                                            </IconButton>
+                                                            <IconButton
+                                                                sx={{
+                                                                    marginLeft: 2
+                                                                }}
+                                                                variant="plain"
+                                                                color="neutral"
+                                                                title="Remove item"
+                                                                onClick={() => {
+                                                                    selectorsField.remove(index)
+                                                                }}
+                                                            >
+                                                                <DeleteForeverIcon />
+                                                            </IconButton>
+                                                        </>
+                                                    }
+                                                    variant="soft"
+                                                    value={field.value}
+                                                    onChange={field.onChange}
+                                                    onBlur={field.onBlur}
+                                                />
+                                            )
+                                        }}
+                                    />
+                                </Sheet>
+                            ))}
+                        </Layout.Container>
+                    ) : (
+                        <Layout.Container
+                            sx={{
+                                flex: 1,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                p: 2,
+                                textAlign: 'center'
+                            }}
+                        >
+                            {activeUrl && (
+                                <>
+                                    <Box
+                                        sx={{
+                                            fontSize: '75px'
+                                        }}
+                                    >
+                                        <HighlightAltIcon fontSize="inherit" color="primary" />
+                                    </Box>
+                                    <Typography>
+                                        Select elements from the website on the right to load their selectors for
+                                        scraping.
+                                    </Typography>
+                                </>
+                            )}
+                        </Layout.Container>
+                    )}
                 </Layout.Side>
                 <Layout.Main
                     sx={{
