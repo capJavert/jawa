@@ -47,30 +47,44 @@ const scrape = async (configPath, options) => {
 
         for (let i = 0; i < config.items.length; i += 1) {
             const item = config.items[i]
+            try {
+                if (page.url() !== item.url) {
+                    await page.goto(item.url)
 
-            if (page.url() !== item.url) {
-                await page.goto(item.url)
+                    logger('log', `Navigated to ${item.url}`)
+                }
 
-                logger('log', `Navigated to ${item.url}`)
+                logger('log', 'Looking for selector', item.selector)
+
+                let scrapedData = await page.$$eval(item.selector, elements =>
+                    elements.map(element => ({
+                        textContent: element.textContent
+                    }))
+                )
+
+                if (scrapedData.length < 2) {
+                    scrapedData = scrapedData[0] || null
+                }
+
+                results.push({
+                    type: 'result',
+                    url: item.url,
+                    selector: item.selector,
+                    data: scrapedData
+                })
+            } catch (error) {
+                if (options.verbose) {
+                    logger('error', error)
+                } else {
+                    logger('error', `Scraping error: ${error.message}`)
+                }
+
+                results.push({
+                    type: 'error',
+                    url: item.url,
+                    error: error.message
+                })
             }
-
-            logger('log', 'Looking for selector', item.selector)
-
-            let scrapedData = await page.$$eval(item.selector, elements =>
-                elements.map(element => ({
-                    textContent: element.textContent
-                }))
-            )
-
-            if (scrapedData.length < 2) {
-                scrapedData = scrapedData[0] || null
-            }
-
-            results.push({
-                url: item.url,
-                selector: item.selector,
-                data: scrapedData
-            })
         }
 
         logger('log', 'Done!')
