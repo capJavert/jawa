@@ -269,15 +269,14 @@ const Home: NextPage = () => {
             {!isMobile && (
                 <DownloadModal
                     download={downloadPending}
-                    onSubmit={() => {
+                    onSubmit={handleSubmit(values => {
                         const aElement = document.createElement('a')
                         aElement.setAttribute('download', `vscraper-config-${downloadPending}.json`)
                         const href = URL.createObjectURL(
                             new Blob(
                                 [
                                     JSON.stringify({
-                                        url: activeUrl,
-                                        items: fields
+                                        items: values.items
                                     })
                                 ],
                                 {
@@ -289,7 +288,7 @@ const Home: NextPage = () => {
                         aElement.setAttribute('target', '_blank')
                         aElement.click()
                         URL.revokeObjectURL(href)
-                    }}
+                    })}
                     onClose={() => {
                         setDownloadPending(false)
                     }}
