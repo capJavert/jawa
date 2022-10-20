@@ -585,7 +585,7 @@ const Home: NextPage = () => {
                                     <ListItemDecorator>🚀</ListItemDecorator>Run it!
                                 </ListItem>
                                 <ListItem>
-                                    <ListItemDecorator>✅</ListItemDecorator>Collect your data!
+                                    <ListItemDecorator>✅</ListItemDecorator>Collect your data! (JSON format)
                                 </ListItem>
                             </List>
 
