@@ -326,7 +326,7 @@ const Home: NextPage = () => {
                                 setDownloadPending(Date.now())
                             })}
                         >
-                            Run it
+                            Run&nbsp;it
                         </Button>
                         <Controller
                             name="url"
