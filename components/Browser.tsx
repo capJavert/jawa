@@ -5,13 +5,48 @@ import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
 import Typography from '@mui/joy/Typography'
 import Link from 'next/link'
-import type { ReactEventHandler } from 'react'
+import { ReactEventHandler, useMemo } from 'react'
 
+import { BraveIcon } from './icons/Brave'
 import { ChromeIcon } from './icons/Chrome'
+import { EdgeIcon } from './icons/Edge'
+import { OperaIcon } from './icons/Opera'
 
 const Browser = ({ url, enabled = true, onLoad }: { url: string; enabled: boolean; onLoad?: ReactEventHandler }) => {
     const extensionId = process.env.NEXT_PUBLIC_EXTENSION_CHROME_ID
     const downloadLink = `https://chrome.google.com/webstore/detail/jawa-visual-scraper/${extensionId}`
+    const browserName = useMemo(() => {
+        if (typeof window === 'undefined') {
+            return ''
+        }
+
+        const userAgent = navigator.userAgent
+
+        switch (true) {
+            case typeof (navigator as any).brave !== 'undefined':
+                return 'Brave'
+            case !!userAgent.match(/opr\//i):
+                return 'Opera'
+            case !!userAgent.match(/edg/i):
+                return 'Edge'
+            case !!userAgent.match(/chrome|chromium|crios/i):
+            default:
+                return 'Chrome'
+        }
+    }, [])
+    const BrowserIcon = useMemo(() => {
+        switch (browserName) {
+            case 'Brave':
+                return BraveIcon
+            case 'Opera':
+                return OperaIcon
+            case 'Edge':
+                return EdgeIcon
+            case 'Chrome':
+            default:
+                return ChromeIcon
+        }
+    }, [browserName])
 
     if (!enabled) {
         return (
@@ -73,17 +108,17 @@ const Browser = ({ url, enabled = true, onLoad }: { url: string; enabled: boolea
 
                 <Link href={downloadLink} passHref>
                     <Button
-                        title="Add to Chrome"
+                        title={`Add to ${browserName}`}
                         onClick={() => {
                             if (url) {
                                 localStorage.setItem('saved-install-url', url)
                             }
                         }}
                         component="a"
-                        startDecorator={<ChromeIcon width={30} height={30} />}
+                        startDecorator={<BrowserIcon width={30} height={30} />}
                         size="lg"
                     >
-                        Add to Chrome
+                        Add to {browserName}
                     </Button>
                 </Link>
             </Box>
