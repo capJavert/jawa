@@ -58,7 +58,13 @@ const scrape = async (configPath, options) => {
                         elementId: element.id || undefined,
                         className: element.className || undefined,
                         title: element.title || undefined,
+                        name: element.getAttribute('name') || undefined,
                         alt: element.getAttribute('alt') || undefined,
+                        src: element.src || undefined,
+                        href: element.href || undefined,
+                        for: element.getAttribute('for') || undefined,
+                        type: element.type || undefined,
+                        value: element.value || undefined,
                         dataAttributes:
                             Object.keys(element.dataset || {}).length > 0
                                 ? {
