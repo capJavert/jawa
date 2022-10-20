@@ -28,7 +28,7 @@ const Browser = ({ url, enabled = true, onLoad }: { url: string; enabled: boolea
             case !!userAgent.match(/opr\//i):
                 return 'Opera'
             case !!userAgent.match(/edg/i):
-                return 'Edge'
+                return 'Microsoft Edge'
             case !!userAgent.match(/chrome|chromium|crios/i):
             default:
                 return 'Chrome'
@@ -40,7 +40,7 @@ const Browser = ({ url, enabled = true, onLoad }: { url: string; enabled: boolea
                 return BraveIcon
             case 'Opera':
                 return OperaIcon
-            case 'Edge':
+            case 'Microsoft Edge':
                 return EdgeIcon
             case 'Chrome':
             default:
