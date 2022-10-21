@@ -34,3 +34,7 @@ Browser extension that runs the embedded browser which powers the visual scraper
 
 It is available on:
 - [Chrome Web Store](https://chrome.google.com/webstore/detail/jawa-visual-scraper/icjgianfpiifbdpddkadmpcegiffiglk)
+- Chrome extensions also work on all Chromium based browsers like:
+    - Opera
+    - Microsoft Edge
+    - Brave
