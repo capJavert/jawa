@@ -59,6 +59,7 @@ const App = ({ Component, pageProps }: AppProps) => {
                                 flexDirection: 'row',
                                 alignItems: 'center',
                                 gap: 1.5,
+                                color: 'black',
                                 [theme.getColorSchemeSelector('light')]: {
                                     color: 'black'
                                 },
