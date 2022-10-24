@@ -16,7 +16,6 @@ import { DefaultSeo } from 'next-seo'
 import ColorSchemeToggle from '../components/ColorScheemToggle'
 import { JawaIcon } from '../components/icons/Jawa'
 import Layout from '../components/Layout'
-import theme from '../theme'
 
 const GTAG = (id: string) => {
     return `window.dataLayer = window.dataLayer || [];
@@ -29,7 +28,7 @@ const GTAG = (id: string) => {
 const App = ({ Component, pageProps }: AppProps) => {
     return (
         <>
-            <CssVarsProvider disableTransitionOnChange theme={theme} defaultMode="system">
+            <CssVarsProvider disableTransitionOnChange defaultMode="system">
                 <DefaultSeo
                     defaultTitle="Jawa - Visual Scraper"
                     titleTemplate="Jawa | %s"
