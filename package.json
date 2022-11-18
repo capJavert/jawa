@@ -15,6 +15,7 @@
         "@hookform/resolvers": "^2.9.9",
         "@mui/icons-material": "^5.10.9",
         "@mui/joy": "^5.0.0-alpha.49",
+        "js-sha1": "^0.6.0",
         "next": "12.3.1",
         "next-seo": "^5.6.0",
         "platform-detect": "^3.0.1",

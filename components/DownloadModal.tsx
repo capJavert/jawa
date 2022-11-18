@@ -16,7 +16,7 @@ const DownloadModal = ({
     onClose,
     onSubmit
 }: {
-    download: number | false
+    download: string | false
     onClose: (event: {}, reason: 'backdropClick' | 'escapeKeyDown' | 'closeClick') => void
     onSubmit: () => void
 }) => {

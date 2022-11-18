@@ -20,6 +20,8 @@ import Sheet from '@mui/joy/Sheet'
 import TextField from '@mui/joy/TextField'
 import Typography from '@mui/joy/Typography'
 import useMediaQuery from '@mui/material/useMediaQuery'
+// @ts-ignore
+import * as sha1 from 'js-sha1'
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -82,7 +84,7 @@ const Home: NextPage = () => {
     const urlController = useController({ name: 'url', control })
 
     const [isIframeLoading, setIframeLoading] = useState(false)
-    const [downloadPending, setDownloadPending] = useState<number | false>(false)
+    const [downloadPending, setDownloadPending] = useState<string | false>(false)
 
     useEffect(() => {
         if (queryUrl) {
@@ -322,8 +324,13 @@ const Home: NextPage = () => {
                             endDecorator={<SendIcon />}
                             disabled={fields.length === 0 || !formState.isValid}
                             title="Run it"
-                            onClick={handleSubmit(() => {
-                                setDownloadPending(Date.now())
+                            onClick={handleSubmit(data => {
+                                const sha1Instance = sha1.create()
+                                sha1Instance.update(JSON.stringify(data))
+                                const hash = sha1Instance.hex() as string
+                                const shortHash = hash.substring(0, 10)
+
+                                setDownloadPending(shortHash)
                             })}
                         >
                             Run&nbsp;it
