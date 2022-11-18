@@ -76,6 +76,7 @@ const Home: NextPage = () => {
     })
     const selectorsFieldRef = useRef(selectorsField)
     selectorsFieldRef.current = selectorsField
+    const lastChangeTs = useRef(0)
 
     const { url: queryUrl, extevent: queryEvent } = router.query
     const [activeUrl, setActiveUrl] = useState('')
@@ -134,6 +135,8 @@ const Home: NextPage = () => {
                             url,
                             selector
                         })
+
+                        lastChangeTs.current = Date.now()
                     }
 
                     break
@@ -323,7 +326,7 @@ const Home: NextPage = () => {
                             disabled={fields.length === 0 || !formState.isValid}
                             title="Run it"
                             onClick={handleSubmit(() => {
-                                setDownloadPending(Date.now())
+                                setDownloadPending(lastChangeTs.current)
                             })}
                         >
                             Run&nbsp;it
@@ -427,6 +430,8 @@ const Home: NextPage = () => {
                                                                 title="Remove item"
                                                                 onClick={() => {
                                                                     selectorsField.remove(index)
+
+                                                                    lastChangeTs.current = Date.now()
                                                                 }}
                                                             >
                                                                 <DeleteForeverIcon />
@@ -435,7 +440,11 @@ const Home: NextPage = () => {
                                                     }
                                                     variant="soft"
                                                     value={field.value}
-                                                    onChange={field.onChange}
+                                                    onChange={event => {
+                                                        field.onChange(event)
+
+                                                        lastChangeTs.current = Date.now()
+                                                    }}
                                                     onBlur={field.onBlur}
                                                 />
                                             )
