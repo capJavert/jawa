@@ -10,21 +10,12 @@ import Typography from '@mui/joy/Typography'
 import { GlobalStyles } from '@mui/system'
 import type { AppProps } from 'next/app'
 import Link from 'next/link'
-import Script from 'next/script'
 import { DefaultSeo } from 'next-seo'
 
 import ColorSchemeToggle from '../components/ColorScheemToggle'
 import { JawaIcon } from '../components/icons/Jawa'
 import Layout from '../components/Layout'
 import theme from '../theme'
-
-const GTAG = (id: string) => {
-    return `window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    
-    gtag('config', '${id}');`
-}
 
 const App = ({ Component, pageProps }: AppProps) => {
     return (
@@ -114,21 +105,6 @@ const App = ({ Component, pageProps }: AppProps) => {
                     <Component {...pageProps} />
                 </Layout.Container>
             </CssVarsProvider>
-            {process.env.NODE_ENV === 'production' && (
-                <>
-                    <Script
-                        id="script-gtag"
-                        strategy="afterInteractive"
-                        src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GTM_ID}`}
-                    />
-                    <Script
-                        id="script-gtag-init"
-                        dangerouslySetInnerHTML={{
-                            __html: GTAG(process.env.NEXT_PUBLIC_GTM_ID as string)
-                        }}
-                    />
-                </>
-            )}
         </>
     )
 }
