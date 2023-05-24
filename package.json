@@ -19,6 +19,7 @@
         "next": "12.3.1",
         "next-seo": "^5.6.0",
         "platform-detect": "^3.0.1",
+        "randomcolor": "^0.6.2",
         "react": "18.2.0",
         "react-dom": "18.2.0",
         "react-hook-form": "^7.37.0",
@@ -27,6 +28,7 @@
     "devDependencies": {
         "@types/chrome": "^0.0.198",
         "@types/node": "18.8.3",
+        "@types/randomcolor": "^0.5.7",
         "@types/react": "18.0.21",
         "@types/react-dom": "18.0.6",
         "eslint": "8.25.0",

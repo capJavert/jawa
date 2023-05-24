@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-key */
 import { zodResolver } from '@hookform/resolvers/zod'
 import Portal from '@mui/base/Portal'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
@@ -7,7 +8,7 @@ import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import SendIcon from '@mui/icons-material/Send'
 import TabIcon from '@mui/icons-material/Tab'
 import WarningIcon from '@mui/icons-material/Warning'
-import type { Theme } from '@mui/joy'
+import { type Theme, Divider } from '@mui/joy'
 import Alert from '@mui/joy/Alert'
 import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
@@ -24,37 +25,26 @@ import useMediaQuery from '@mui/material/useMediaQuery'
 import * as sha1 from 'js-sha1'
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
+import randomColor from 'randomcolor'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Controller, useController, useFieldArray, useForm } from 'react-hook-form'
-import { z } from 'zod'
 
 import Browser from '../components/Browser'
 import DownloadModal from '../components/DownloadModal'
 import Layout from '../components/Layout'
-import { EScraperMessageType, TScraperConfig, TScraperMessage, TScraperSelector } from '../types'
-
-const urlRegex =
-    /^https:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,63}\.[a-zA-Z0-9()]{1,63}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/
-const httpRegex = /https?/
-const urlSchema = z.preprocess(value => {
-    if (!value || typeof value !== 'string') {
-        return ''
-    }
-
-    if (!httpRegex.test(value)) {
-        return `https://${value}`
-    }
-
-    return value
-}, z.string().regex(urlRegex, { message: 'Invalid URL' }).min(1, { message: 'Required' }))
-const selectorItemSchema = z.object({
-    url: urlSchema,
-    selector: z.string().min(1, { message: 'Required' })
-})
-const schema = z.object({
-    url: urlSchema,
-    items: z.array(selectorItemSchema)
-})
+import { SelectedCSSSelectors } from '../components/SelectedCSSSelectors'
+import { useExtensionPort } from '../hooks/useExtensionPort'
+import { useQueryURL } from '../hooks/useQueryURL'
+import { schema, selectorItemSchema, urlSchema } from '../lib/zod'
+import {
+    EScraperMessageType,
+    isNeitherNullNorUndefined,
+    TScraperConfig,
+    TScraperConfigFromExtension,
+    TScraperMessage,
+    TScraperSelector,
+    TScraperSelectorFromExtension
+} from '../types'
 
 const getPortalContainer = (() => () => {
     let container
@@ -67,7 +57,6 @@ const getPortalContainer = (() => () => {
 })()
 
 const Home: NextPage = () => {
-    const router = useRouter()
     const { control, handleSubmit, formState } = useForm<TScraperConfig>({
         resolver: zodResolver(schema),
         mode: 'onSubmit'
@@ -76,147 +65,114 @@ const Home: NextPage = () => {
         control,
         name: 'items'
     })
-    const selectorsFieldRef = useRef(selectorsField)
-    selectorsFieldRef.current = selectorsField
-
-    const { url: queryUrl, extevent: queryEvent } = router.query
-    const [activeUrl, setActiveUrl] = useState('')
-    const urlController = useController({ name: 'url', control })
-
-    const [isIframeLoading, setIframeLoading] = useState(false)
-    const [downloadPending, setDownloadPending] = useState<string | false>(false)
+    const extensionPort = useExtensionPort()
+    const isExtensionInstalled = !!extensionPort
+    const isExtensionInstallPending = typeof extensionPort === undefined
 
     useEffect(() => {
-        if (queryUrl) {
-            const parsedUrl = urlSchema.safeParse(queryUrl)
-
-            if (parsedUrl.success) {
-                setActiveUrl(current => {
-                    setIframeLoading(current !== parsedUrl.data)
-
-                    return parsedUrl.data
-                })
-                urlController.field.onChange(parsedUrl.data)
-            }
-
-            const { url: _url, ...restQuery } = router.query
-
-            router.replace({
-                pathname: router.pathname,
-                query: restQuery
+        async function sendOver() {
+            window.postMessage({
+                type: EScraperMessageType.update,
+                payload: selectorsField.fields
             })
         }
-    }, [queryUrl, router, urlController.field])
+        sendOver()
+    }, [selectorsField.fields, extensionPort])
 
-    useEffect(() => {
-        const onMessage = (event: MessageEvent<TScraperMessage>) => {
-            // TODO add valid origins check
+    const selectorsFieldRef = useRef(selectorsField)
+    selectorsFieldRef.current = selectorsField
+    const {
+        activeUrl,
+        isIframeLoading,
+        downloadPending,
+        router,
+        setActiveUrl,
+        setIframeLoading,
+        setDownloadPending,
+        queryEvent,
+        urlController
+    } = useQueryURL(control)
 
-            const { type, payload } = event.data
+    const onMessage = useCallback((event: MessageEvent<TScraperMessage>) => {
+        // TODO add valid origins check
+        const { type, payload } = event.data
 
-            if (!type || typeof payload !== 'object' || Array.isArray(payload)) {
-                return
-            }
-
-            switch (type) {
-                case EScraperMessageType.scrape: {
-                    const {
-                        payload: { url, selector }
-                    } = event.data as TScraperMessage<TScraperSelector>
-
-                    if (!selectorItemSchema.safeParse({ url, selector }).success) {
-                        return
-                    }
-
-                    const fieldInstance = selectorsFieldRef.current
-                    const currentField = fieldInstance.fields.find(item => item.selector === selector)
-
-                    if (!currentField) {
-                        fieldInstance.append({
-                            url,
-                            selector
-                        })
-                    }
-
-                    break
-                }
-                default:
-                    break
-            }
+        if (!type || typeof payload !== 'object' || Array.isArray(payload)) {
+            return
         }
 
+        switch (type) {
+            case EScraperMessageType.scrape: {
+                const {
+                    payload: { url, commonSelector, uniqueSelector, nodeType }
+                } = event.data as TScraperMessage<TScraperSelectorFromExtension>
+
+                if (!commonSelector || !uniqueSelector || !nodeType) {
+                    return
+                }
+                if (!selectorItemSchema.safeParse({ url, commonSelector, uniqueSelector, nodeType }).success) {
+                    return
+                }
+                const fieldInstance = selectorsFieldRef.current
+                const currentFieldIndex = fieldInstance.fields.findIndex(item => item.commonSelector === commonSelector)
+                const currentUniqueFieldIndex = fieldInstance.fields.findIndex(
+                    item => item.uniqueSelector === uniqueSelector && item.blacklisted
+                )
+
+                const currentField = currentFieldIndex !== -1 ? fieldInstance.fields[currentFieldIndex] : null
+                const currentUniqueField =
+                    currentUniqueFieldIndex !== -1 ? fieldInstance.fields[currentUniqueFieldIndex] : null
+
+                if (currentField) {
+                    if (currentUniqueField) {
+                        fieldInstance.update(currentUniqueFieldIndex, {
+                            ...currentUniqueField,
+                            blacklisted: false
+                        })
+                        if (currentField.id === currentUniqueField.id) {
+                            return
+                        }
+                        fieldInstance.remove(currentUniqueFieldIndex)
+                        return
+                    }
+                    fieldInstance.append({
+                        url,
+                        uniqueSelector,
+                        nodeType,
+                        commonSelector,
+                        color: randomColor({
+                            format: 'hex'
+                        }),
+                        blacklisted: true
+                    })
+                    return
+                }
+
+                fieldInstance.append({
+                    url,
+                    commonSelector,
+                    uniqueSelector,
+                    nodeType,
+                    color: randomColor({
+                        format: 'hex'
+                    }),
+                    blacklisted: false
+                })
+
+                break
+            }
+            default:
+                break
+        }
+    }, [])
+
+    useEffect(() => {
         window.addEventListener('message', onMessage, false)
 
         return () => {
             window.removeEventListener('message', onMessage, false)
         }
-    }, [])
-
-    const [extensionPort, setExtensionPort] = useState<chrome.runtime.Port | null | undefined>()
-
-    useEffect(() => {
-        let mounted = true
-        const extensionId = process.env.NEXT_PUBLIC_EXTENSION_CHROME_ID
-
-        if (!extensionId) {
-            return
-        }
-
-        let port: chrome.runtime.Port
-
-        const handleExtensionConnection = async () => {
-            while (true) {
-                if (!mounted) {
-                    return
-                }
-
-                const browser = window.chrome
-
-                if (browser?.runtime?.connect) {
-                    try {
-                        port = browser.runtime.connect(extensionId)
-
-                        if (port) {
-                            port.onMessage.addListener(response => {
-                                if (response && response.type === EScraperMessageType.init && response.ok) {
-                                    setExtensionPort(port)
-                                }
-                            })
-
-                            await new Promise(resolve => {
-                                port.onDisconnect.addListener(() => {
-                                    setExtensionPort(null)
-
-                                    resolve(true)
-                                })
-                            })
-                        }
-                    } catch (error) {
-                        console.error('Extension connect error', error)
-
-                        setExtensionPort(null)
-                    }
-                }
-
-                await new Promise(resolve => {
-                    setTimeout(resolve, 1000)
-                })
-            }
-        }
-
-        handleExtensionConnection()
-
-        return () => {
-            mounted = false
-
-            if (port) {
-                port.disconnect()
-            }
-        }
-    }, [])
-
-    const isExtensionInstalled = !!extensionPort
-    const isExtensionInstallPending = typeof extensionPort === undefined
+    }, [onMessage])
 
     useEffect(() => {
         if (!isExtensionInstalled) {
@@ -250,7 +206,7 @@ const Home: NextPage = () => {
                 query: restQuery
             })
         }
-    }, [isExtensionInstalled, queryEvent, urlController.field, router])
+    }, [isExtensionInstalled, queryEvent, router, setActiveUrl, setIframeLoading, urlController.field])
 
     const onSubmit = handleSubmit(values => {
         setActiveUrl(current => {
@@ -263,7 +219,7 @@ const Home: NextPage = () => {
     const { fields } = selectorsField
     const onIframeLoad = useCallback(() => {
         setIframeLoading(false)
-    }, [])
+    }, [setIframeLoading])
     const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))
 
     return (
@@ -381,75 +337,52 @@ const Home: NextPage = () => {
                         }
                     }}
                 >
+                    {/* TODO: use a memo for blacklisted elements */}
                     {fields.length > 0 ? (
                         <Layout.Container
+                            marginLeft={1}
                             sx={{
                                 flex: 1
                             }}
                         >
-                            {fields.map((field, index) => (
-                                <Sheet
-                                    key={field.id}
-                                    variant="soft"
-                                    sx={{
-                                        p: 2,
-                                        marginBottom: 1
-                                    }}
-                                >
-                                    <Controller
-                                        name={`items.${index}.selector`}
-                                        control={control}
-                                        render={({ field, fieldState }) => {
-                                            return (
-                                                <TextField
-                                                    error={!!fieldState.error}
-                                                    size="sm"
-                                                    name={`items.${index}.selector`}
-                                                    placeholder="Selector"
-                                                    endDecorator={
-                                                        <>
-                                                            <IconButton
-                                                                variant="plain"
-                                                                color="neutral"
-                                                                title="Edit item"
-                                                                onClick={() => {
-                                                                    const element =
-                                                                        document.querySelector<HTMLInputElement>(
-                                                                            `input[name="items.${index}.selector"]`
-                                                                        )
-
-                                                                    if (element) {
-                                                                        element.focus()
-                                                                    }
-                                                                }}
-                                                            >
-                                                                <EditIcon />
-                                                            </IconButton>
-                                                            <IconButton
-                                                                sx={{
-                                                                    marginLeft: 2
-                                                                }}
-                                                                variant="plain"
-                                                                color="neutral"
-                                                                title="Remove item"
-                                                                onClick={() => {
-                                                                    selectorsField.remove(index)
-                                                                }}
-                                                            >
-                                                                <DeleteForeverIcon />
-                                                            </IconButton>
-                                                        </>
-                                                    }
-                                                    variant="soft"
-                                                    value={field.value}
-                                                    onChange={field.onChange}
-                                                    onBlur={field.onBlur}
-                                                />
-                                            )
-                                        }}
-                                    />
-                                </Sheet>
-                            ))}
+                            <Typography px={3} py={2}>
+                                Selected elements
+                            </Typography>
+                            {fields
+                                .filter(el => !el.blacklisted)
+                                .map(field => {
+                                    const index = fields.findIndex(item => item.id === field.id)
+                                    if (index === -1) {
+                                        return null
+                                    }
+                                    return (
+                                        <SelectedCSSSelectors
+                                            field={field}
+                                            index={index}
+                                            control={control}
+                                            selectorsField={selectorsField}
+                                        />
+                                    )
+                                })}
+                            {fields.filter(el => el.blacklisted).length > 0 && (
+                                <Typography px={3}> BlackListed elements </Typography>
+                            )}
+                            {fields
+                                .filter(el => el.blacklisted)
+                                .map(field => {
+                                    const index = fields.findIndex(item => item.id === field.id)
+                                    if (index === -1) {
+                                        return null
+                                    }
+                                    return (
+                                        <SelectedCSSSelectors
+                                            field={field}
+                                            index={index}
+                                            control={control}
+                                            selectorsField={selectorsField}
+                                        />
+                                    )
+                                })}
                         </Layout.Container>
                     ) : (
                         <Layout.Container

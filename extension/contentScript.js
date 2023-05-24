@@ -1,6 +1,7 @@
-const main = async () => {
-    const isFrame = window.self !== window.top
+let cssPaths = []
 
+const isFrame = window.self !== window.top
+const main = async () => {
     if (
         !isFrame ||
         !(await new Promise(resolve => {
@@ -16,12 +17,12 @@ const main = async () => {
         return
     }
 
-    const src = chrome.runtime.getURL('finder.medv.js')
-    const { finder } = await import(src)
-    const scraperData = {
-        url: window.location.href,
-        points: {}
-    }
+    const uniqueFinderSrc = chrome.runtime.getURL('finder.medv.js')
+    const { finder: uniqueFinder } = await import(uniqueFinderSrc)
+
+    const src = chrome.runtime.getURL('DOMPresentationUtils.js')
+    const DOMContentScript = await import(src)
+    const { cssPath } = DOMContentScript.default
 
     const numberMatch = /\d/
 
@@ -31,7 +32,7 @@ const main = async () => {
             event.preventDefault()
             event.stopPropagation()
 
-            const selector = finder(event.target, {
+            const uniqueSelector = uniqueFinder(event.target, {
                 className: name => {
                     const isMinified = ['css', 'jss', 'styled', 'style'].some(item => name.startsWith(item))
                     const hasNumber = numberMatch.test(name)
@@ -39,18 +40,16 @@ const main = async () => {
                     return !isMinified && !hasNumber
                 }
             })
-
-            scraperData.points[selector] = {
-                selector,
-                name: `Point ${Object.keys(scraperData.points).length + 1}`
-            }
-
+            const commonSelector = cssPath(event.target)
+            const nodeType = event.target.nodeName.toLowerCase()
             window.top.postMessage(
                 {
                     type: 'jawa-scrape',
                     payload: {
-                        url: scraperData.url,
-                        selector
+                        url: window.location.href,
+                        commonSelector: commonSelector,
+                        uniqueSelector: uniqueSelector,
+                        nodeType: nodeType
                     }
                 },
                 {
@@ -62,4 +61,65 @@ const main = async () => {
     )
 }
 
+function listenForMessages() {
+    window.addEventListener('message', event => {
+        if (event.data.type === 'update-css-path') {
+            chrome.runtime.sendMessage({ sendBack: true, type: event.data.type, data: event.data.payload })
+        }
+    })
+
+    chrome.runtime.onMessage.addListener(function (details) {
+        if (!isFrame || details.type !== 'update-css-path') {
+            return
+        }
+        const selectors = details.data
+
+        const blackListed = selectors.filter(selector => selector.blacklisted)
+        const nonBlackListed = selectors.filter(selector => !selector.blacklisted)
+
+        if (cssPaths.length > 0) {
+            cssPaths.forEach(selector => {
+                const { commonSelector } = selector
+                try {
+                    const els = window.document.querySelectorAll(commonSelector)
+                    els?.forEach(element => {
+                        element.style.outline = `none`
+                        element.style.backgroundColor = 'unset'
+                    })
+                } catch (error) {
+                    console.error(error)
+                }
+            })
+        }
+
+        cssPaths = selectors
+        nonBlackListed.forEach(selector => {
+            const { commonSelector, color } = selector
+            try {
+                const els = window.document.querySelectorAll(commonSelector)
+                els?.forEach(element => {
+                    element.style.outline = `2px solid ${color}`
+                    element.style.backgroundColor = `${color}20`
+                })
+            } catch (error) {
+                console.error(error)
+            }
+        })
+
+        blackListed.forEach(selector => {
+            const { uniqueSelector, color } = selector
+            try {
+                const els = window.document.querySelectorAll(uniqueSelector)
+                els?.forEach(element => {
+                    element.style.outline = `2px solid ${color}`
+                    element.style.backgroundColor = `${color}20`
+                })
+            } catch (error) {
+                console.error(error)
+            }
+        })
+    })
+}
+
 main()
+listenForMessages()
