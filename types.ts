@@ -1,17 +1,48 @@
+export type BaseNode = {
+    nodeType: string
+}
+export type NodeLink = BaseNode & {
+    link: string
+}
+
+export type NodeInput = BaseNode & {
+    inputValue: string
+}
+
 export type TScraperSelectorFromExtension = {
     url: string
-    commonSelector: string | null
-    uniqueSelector: string | null
-    nodeType: string | null
+    selectors: {
+        stylingSelector: string | null
+        commonSelector: string
+        uniqueSelector: string
+    }
+    node: NodeLink | NodeInput | BaseNode
+}
+export enum ScrapeActions {
+    'SCRAPE_CONTENT' = 'SCRAPE_CONTENT',
+    'INPUT_VALUE' = 'INPUT_VALUE',
+    'GO_TO_URL' = 'GO_TO_URL',
+    'SCRAPE_CONTENT_FROM_URLS' = 'SCRAPE_CONTENT_FROM_URLS'
+}
+
+export enum CustomFields {
+    'dateScrapped' = 'DATE_SCRAPPED',
+    'websiteLanguage' = 'WEBSITE_LANGUAGE'
 }
 
 export type TScraperSelector = {
     url: string
-    commonSelector: string
-    uniqueSelector: string
-    nodeType: string
+    selectors: {
+        stylingSelector: string | null
+        commonSelector: string
+        uniqueSelector: string
+    }
+    node: NodeLink | NodeInput | BaseNode
     color: string
     blacklisted: boolean
+    label: string
+    value: string | null
+    action: ScrapeActions | null
 }
 
 export type TScraperConfigFromExtension = {

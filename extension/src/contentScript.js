@@ -40,8 +40,16 @@ const main = async () => {
                     return !isMinified && !hasNumber
                 }
             })
-            const commonSelector = cssPath(event.target)
-            const nodeType = event.target.nodeName.toLowerCase()
+            const targetElement = event.target
+            const parentLink = targetElement.closest('a')
+            const element = parentLink || targetElement
+            const stylingSelector = cssPath(targetElement)
+
+            // for element
+            const commonSelector = cssPath(element)
+            const nodeType = element.nodeName.toLowerCase()
+            const inputType = element.type?.toLowerCase()
+ 
             window.top.postMessage(
                 {
                     type: 'jawa-scrape',
@@ -49,7 +57,10 @@ const main = async () => {
                         url: window.location.href,
                         commonSelector: commonSelector,
                         uniqueSelector: uniqueSelector,
-                        nodeType: nodeType
+                        nodeType: nodeType,
+                        link: element.href ?? null,
+                        stylingSelector: stylingSelector || commonSelector,
+                        inputType
                     }
                 },
                 {
@@ -79,12 +90,12 @@ function listenForMessages() {
 
         if (cssPaths.length > 0) {
             cssPaths.forEach(selector => {
-                const { commonSelector } = selector
+                const { stylingSelector: commonSelector } = selector
                 try {
                     const els = window.document.querySelectorAll(commonSelector)
                     els?.forEach(element => {
-                        element.style.outline = `none`
-                        element.style.backgroundColor = 'unset'
+                        element.style.outline = ''
+                        element.style.backgroundColor = ''
                     })
                 } catch (error) {
                     console.error(error)
@@ -94,7 +105,7 @@ function listenForMessages() {
 
         cssPaths = selectors
         nonBlackListed.forEach(selector => {
-            const { commonSelector, color } = selector
+            const { stylingSelector: commonSelector, color } = selector
             try {
                 const els = window.document.querySelectorAll(commonSelector)
                 els?.forEach(element => {

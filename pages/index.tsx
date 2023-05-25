@@ -26,8 +26,8 @@ import * as sha1 from 'js-sha1'
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import randomColor from 'randomcolor'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { Controller, useController, useFieldArray, useForm } from 'react-hook-form'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Controller, FieldArrayWithId, useController, useFieldArray, useForm } from 'react-hook-form'
 
 import Browser from '../components/Browser'
 import DownloadModal from '../components/DownloadModal'
@@ -39,12 +39,15 @@ import { schema, selectorItemSchema, urlSchema } from '../lib/zod'
 import {
     EScraperMessageType,
     isNeitherNullNorUndefined,
+    ScrapeActions,
     TScraperConfig,
     TScraperConfigFromExtension,
     TScraperMessage,
     TScraperSelector,
     TScraperSelectorFromExtension
 } from '../types'
+import { Add } from '@mui/icons-material'
+import { CustomFields } from '../components/CustomFields'
 
 const getPortalContainer = (() => () => {
     let container
@@ -57,10 +60,11 @@ const getPortalContainer = (() => () => {
 })()
 
 const Home: NextPage = () => {
-    const { control, handleSubmit, formState } = useForm<TScraperConfig>({
+    const { control, handleSubmit, formState, watch } = useForm<TScraperConfig>({
         resolver: zodResolver(schema),
         mode: 'onSubmit'
     })
+    const watchAllFields = watch(['items'])
     const selectorsField = useFieldArray({
         control,
         name: 'items'
@@ -69,15 +73,22 @@ const Home: NextPage = () => {
     const isExtensionInstalled = !!extensionPort
     const isExtensionInstallPending = typeof extensionPort === undefined
 
+    const sendOver = useCallback(() => {
+        window.postMessage({
+            type: EScraperMessageType.update,
+            payload: [...selectorsField.fields]
+        })
+    }, [selectorsField.fields])
+
     useEffect(() => {
-        async function sendOver() {
-            window.postMessage({
-                type: EScraperMessageType.update,
-                payload: selectorsField.fields
-            })
+        if (isExtensionInstalled) {
+            sendOver()
         }
+    }, [isExtensionInstalled, sendOver])
+
+    useEffect(() => {
         sendOver()
-    }, [selectorsField.fields, extensionPort])
+    }, [sendOver])
 
     const selectorsFieldRef = useRef(selectorsField)
     selectorsFieldRef.current = selectorsField
@@ -104,7 +115,7 @@ const Home: NextPage = () => {
         switch (type) {
             case EScraperMessageType.scrape: {
                 const {
-                    payload: { url, commonSelector, uniqueSelector, nodeType }
+                    payload: { url, commonSelector, uniqueSelector, nodeType, stylingSelector, link }
                 } = event.data as TScraperMessage<TScraperSelectorFromExtension>
 
                 if (!commonSelector || !uniqueSelector || !nodeType) {
@@ -122,7 +133,7 @@ const Home: NextPage = () => {
                 const currentField = currentFieldIndex !== -1 ? fieldInstance.fields[currentFieldIndex] : null
                 const currentUniqueField =
                     currentUniqueFieldIndex !== -1 ? fieldInstance.fields[currentUniqueFieldIndex] : null
-
+                let blacklisted = false
                 if (currentField) {
                     if (currentUniqueField) {
                         fieldInstance.update(currentUniqueFieldIndex, {
@@ -135,17 +146,7 @@ const Home: NextPage = () => {
                         fieldInstance.remove(currentUniqueFieldIndex)
                         return
                     }
-                    fieldInstance.append({
-                        url,
-                        uniqueSelector,
-                        nodeType,
-                        commonSelector,
-                        color: randomColor({
-                            format: 'hex'
-                        }),
-                        blacklisted: true
-                    })
-                    return
+                    blacklisted = true
                 }
 
                 fieldInstance.append({
@@ -156,7 +157,13 @@ const Home: NextPage = () => {
                     color: randomColor({
                         format: 'hex'
                     }),
-                    blacklisted: false
+                    label: '',
+                    value: null,
+                    action: ScrapeActions.SCRAPE_CONTENT,
+                    valueToInput: null,
+                    blacklisted,
+                    link,
+                    stylingSelector
                 })
 
                 break
@@ -217,11 +224,34 @@ const Home: NextPage = () => {
     })
 
     const { fields } = selectorsField
+
+    const fieldsByURL = useMemo(() => {
+        return fields.reduce((acc, item) => {
+            if (!acc[item.url]) {
+                acc[item.url] = [item]
+                return acc
+            }
+            acc[item.url].push(item)
+            return acc
+        }, {} as Record<string, FieldArrayWithId<TScraperConfig, 'items', 'id'>[]>)
+    }, [fields])
     const onIframeLoad = useCallback(() => {
         setIframeLoading(false)
     }, [setIframeLoading])
     const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))
 
+    const gotoUrl = useCallback(
+        (url: string) => {
+            if (!formState.isValid) {
+                return
+            }
+            setActiveUrl(current => {
+                setIframeLoading(current !== url)
+                return url
+            })
+        },
+        [formState.isValid, setActiveUrl, setIframeLoading]
+    )
     return (
         <>
             {!isMobile && (
@@ -337,80 +367,128 @@ const Home: NextPage = () => {
                         }
                     }}
                 >
-                    {/* TODO: use a memo for blacklisted elements */}
-                    {fields.length > 0 ? (
-                        <Layout.Container
-                            marginLeft={1}
-                            sx={{
-                                flex: 1
-                            }}
-                        >
-                            <Typography px={3} py={2}>
-                                Selected elements
+                    <Layout.Container
+                        marginLeft={1}
+                        sx={{
+                            flex: 1
+                        }}
+                    >
+                        <CustomFields />
+                        {Object.keys(fieldsByURL)?.length > 1 && (
+                            <Typography
+                                level="body1"
+                                sx={{
+                                    marginX: 4,
+                                    marginY: 2
+                                }}
+                            >
+                                Previously selected elements
                             </Typography>
-                            {fields
-                                .filter(el => !el.blacklisted)
-                                .map(field => {
-                                    const index = fields.findIndex(item => item.id === field.id)
-                                    if (index === -1) {
-                                        return null
-                                    }
-                                    return (
-                                        <SelectedCSSSelectors
-                                            field={field}
-                                            index={index}
-                                            control={control}
-                                            selectorsField={selectorsField}
-                                        />
-                                    )
-                                })}
-                            {fields.filter(el => el.blacklisted).length > 0 && (
-                                <Typography px={3}> BlackListed elements </Typography>
-                            )}
-                            {fields
-                                .filter(el => el.blacklisted)
-                                .map(field => {
-                                    const index = fields.findIndex(item => item.id === field.id)
-                                    if (index === -1) {
-                                        return null
-                                    }
-                                    return (
-                                        <SelectedCSSSelectors
-                                            field={field}
-                                            index={index}
-                                            control={control}
-                                            selectorsField={selectorsField}
-                                        />
-                                    )
-                                })}
-                        </Layout.Container>
-                    ) : (
-                        <Layout.Container
-                            sx={{
-                                flex: 1,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                p: 2,
-                                textAlign: 'center'
-                            }}
-                        >
-                            {activeUrl && isExtensionInstalled && (
-                                <>
-                                    <Box
+                        )}
+                        {Object.keys(fieldsByURL).map(el => {
+                            if (el === activeUrl) {
+                                return null
+                            }
+
+                            return (
+                                <Sheet
+                                    variant="soft"
+                                    color="neutral"
+                                    sx={{
+                                        paddingY: 1,
+                                        marginBottom: 1,
+                                        paddingX: 2
+                                    }}
+                                    key={el}
+                                >
+                                    <Typography
+                                        level="body2"
                                         sx={{
-                                            fontSize: '75px'
+                                            marginX: 4
                                         }}
+                                        key={el}
                                     >
-                                        <HighlightAltIcon fontSize="inherit" color="primary" />
-                                    </Box>
-                                    <Typography>
-                                        Select elements from the website on the right to load their selectors for
-                                        scraping.
+                                        {el} ({fieldsByURL[el]?.length} elements selcted )
                                     </Typography>
-                                </>
-                            )}
-                        </Layout.Container>
-                    )}
+                                </Sheet>
+                            )
+                        })}
+                        {/* TODO: use a memo for blacklisted elements */}
+                        {fieldsByURL[activeUrl]?.length > 0 ? (
+                            <>
+                                <Typography px={3} py={2}>
+                                    Selected elements
+                                </Typography>
+                                {fieldsByURL[activeUrl]
+                                    .filter(el => !el.blacklisted)
+                                    .map(field => {
+                                        const index = fields.findIndex(item => item.id === field.id)
+                                        if (index === -1) {
+                                            return null
+                                        }
+                                        return (
+                                            <SelectedCSSSelectors
+                                                gotoUrl={gotoUrl}
+                                                key={field.id}
+                                                watch={watchAllFields}
+                                                field={field}
+                                                index={index}
+                                                control={control}
+                                                selectorsField={selectorsField}
+                                            />
+                                        )
+                                    })}
+                                {fieldsByURL[activeUrl]?.filter(el => el.blacklisted).length > 0 && (
+                                    <Typography px={3}> BlackListed elements </Typography>
+                                )}
+                                {fieldsByURL[activeUrl]
+                                    ?.filter(el => el.blacklisted)
+                                    .map(field => {
+                                        const index = fields.findIndex(item => item.id === field.id)
+                                        if (index === -1) {
+                                            return null
+                                        }
+                                        return (
+                                            <SelectedCSSSelectors
+                                                gotoUrl={gotoUrl}
+                                                key={field.id}
+                                                watch={watchAllFields}
+                                                field={field}
+                                                index={index}
+                                                control={control}
+                                                selectorsField={selectorsField}
+                                            />
+                                        )
+                                    })}
+                            </>
+                        ) : (
+                            <Box
+                                sx={{
+                                    flex: 1,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    p: 2,
+                                    textAlign: 'center'
+                                }}
+                            >
+                                {activeUrl && isExtensionInstalled && (
+                                    <>
+                                        <Box
+                                            sx={{
+                                                fontSize: '75px'
+                                            }}
+                                        >
+                                            <HighlightAltIcon fontSize="inherit" color="primary" />
+                                        </Box>
+                                        <Typography>
+                                            Select elements from the website on the right to load their selectors for
+                                            scraping.
+                                        </Typography>
+                                    </>
+                                )}
+                            </Box>
+                        )}
+                    </Layout.Container>
                 </Layout.Side>
                 <Layout.Main
                     sx={{

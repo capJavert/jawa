@@ -4,7 +4,6 @@ import { EScraperMessageType } from '../types'
 
 export const useExtensionPort = () => {
     const [extensionPort, setExtensionPort] = useState<chrome.runtime.Port | null | undefined>()
-
     useEffect(() => {
         let mounted = true
         const extensionId = process.env.NEXT_PUBLIC_EXTENSION_CHROME_ID
