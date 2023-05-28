@@ -1,5 +1,0 @@
-export const elementsWithInput = ['input', 'textarea', 'select']
-export const elementsWithLink = ['a']
-export const elementsWithNavigation = ['input', 'button']
-export const elemensWithNavigationInputType = ['submit']
-export const inputTypesThatNeedOptions = ['select']
