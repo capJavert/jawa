@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { EScraperMessageType } from '../types'
+import { MessageEvents } from '../types'
 
 export const useExtensionPort = () => {
     const [extensionPort, setExtensionPort] = useState<chrome.runtime.Port | null | undefined>()
@@ -14,7 +14,7 @@ export const useExtensionPort = () => {
         let port: chrome.runtime.Port
 
         const handleExtensionConnection = async () => {
-            while (true) {
+             while (true) {
                 if (!mounted) {
                     return
                 }
@@ -25,7 +25,7 @@ export const useExtensionPort = () => {
                         port = browser.runtime.connect(extensionId)
                         if (port) {
                             port.onMessage.addListener(response => {
-                                if (response && response.type === EScraperMessageType.init && response.ok) {
+                                if (response && response.type === MessageEvents.init && response.ok) {
                                     setExtensionPort(port)
                                 }
                             })
@@ -61,6 +61,5 @@ export const useExtensionPort = () => {
             }
         }
     }, [])
-
-    return extensionPort
+     return extensionPort
 }

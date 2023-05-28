@@ -1,38 +1,22 @@
 {
     "background": {
-        "service_worker": "background.js"
+        "service_worker": "dist/background.js"
     },
     "description": "Visual scraper interface, exports to puppeteer script which you can run anywhere.",
     "externally_connectable": {
         "matches": [
-             "http://localhost:3000/*",
+            "http://localhost:3000/*",
             "https://*.kickass.codes/*",
             "https://*.kickass.website/*",
             "https://kickass.ngrok.io/*"
         ]
     },
-    "all_frames": true,
     "manifest_version": 3,
     "name": "Jawa - Visual Scraper",
-    "web_accessible_resources": [
-        {
-            "resources": [
-                "finder.medv.js",
-                "DOMPresentationUtils.js"
-            ],
-            "matches": [
-                "<all_urls>"
-            ]
-        }
-    ],
     "content_scripts": [
         {
-            "js": [
-                "contentScript.js"
-            ],
-            "matches": [
-                "<all_urls>"
-            ],
+            "js": ["dist/contentScript.js"],
+            "matches": ["<all_urls>"],
             "all_frames": true
         }
     ],
@@ -45,12 +29,8 @@
             }
         ]
     },
-    "permissions": [
-        "declarativeNetRequest"
-    ],
-    "host_permissions": [
-        "<all_urls>"
-    ],
+    "permissions": ["declarativeNetRequest"],
+    "host_permissions": ["<all_urls>"],
     "short_name": "Jawa",
     "version": "1.0.0",
     "icons": {

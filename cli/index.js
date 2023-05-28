@@ -101,8 +101,6 @@ const scrape = async (configPath, options) => {
         }
 
         logger('log', 'Done!')
-
-        console.log(JSON.stringify(results, null, options.indentSize))
     } catch (error) {
         if (options.verbose) {
             console.error(error)

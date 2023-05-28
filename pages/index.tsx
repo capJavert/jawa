@@ -1,8 +1,6 @@
 /* eslint-disable react/jsx-key */
 import { zodResolver } from '@hookform/resolvers/zod'
 import Portal from '@mui/base/Portal'
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
-import EditIcon from '@mui/icons-material/Edit'
 import HighlightAltIcon from '@mui/icons-material/HighlightAlt'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import SendIcon from '@mui/icons-material/Send'
@@ -13,7 +11,6 @@ import Alert from '@mui/joy/Alert'
 import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
 import CircularProgress from '@mui/joy/CircularProgress'
-import IconButton from '@mui/joy/IconButton'
 import List from '@mui/joy/List'
 import ListItem from '@mui/joy/ListItem'
 import ListItemDecorator from '@mui/joy/ListItemDecorator'
@@ -21,34 +18,26 @@ import Sheet from '@mui/joy/Sheet'
 import TextField from '@mui/joy/TextField'
 import Typography from '@mui/joy/Typography'
 import useMediaQuery from '@mui/material/useMediaQuery'
+import { watchFile } from 'fs'
 // @ts-ignore
 import * as sha1 from 'js-sha1'
 import type { NextPage } from 'next'
-import { useRouter } from 'next/router'
 import randomColor from 'randomcolor'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Controller, FieldArrayWithId, useController, useFieldArray, useForm } from 'react-hook-form'
+import { toast, Toaster } from 'react-hot-toast'
 
 import Browser from '../components/Browser'
+import { Collapsable } from '../components/Collpsable'
+import { CustomFields } from '../components/CustomFields'
 import DownloadModal from '../components/DownloadModal'
 import Layout from '../components/Layout'
 import { SelectedCSSSelectors } from '../components/SelectedCSSSelectors'
+import { Message, Response } from '../eventMessages'
 import { useExtensionPort } from '../hooks/useExtensionPort'
 import { useQueryURL } from '../hooks/useQueryURL'
 import { schema, selectorItemSchema, urlSchema } from '../lib/zod'
-import {
-    EScraperMessageType,
-    isNeitherNullNorUndefined,
-    ScrapeActions,
-    TScraperConfig,
-    TScraperConfigFromExtension,
-    TScraperMessage,
-    TScraperSelector,
-    TScraperSelectorFromExtension
-} from '../types'
-import { Add } from '@mui/icons-material'
-import { CustomFields } from '../components/CustomFields'
-
+import { CSSPath, isInput, MessageEvents, ResponseEvents, ScrapperActions, TScraperConfig } from '../types'
 const getPortalContainer = (() => () => {
     let container
 
@@ -64,6 +53,7 @@ const Home: NextPage = () => {
         resolver: zodResolver(schema),
         mode: 'onSubmit'
     })
+    const [url, setUrl] = useState('')
     const watchAllFields = watch(['items'])
     const selectorsField = useFieldArray({
         control,
@@ -75,7 +65,7 @@ const Home: NextPage = () => {
 
     const sendOver = useCallback(() => {
         window.postMessage({
-            type: EScraperMessageType.update,
+            type: MessageEvents.updateCSSPath,
             payload: [...selectorsField.fields]
         })
     }, [selectorsField.fields])
@@ -104,74 +94,92 @@ const Home: NextPage = () => {
         urlController
     } = useQueryURL(control)
 
-    const onMessage = useCallback((event: MessageEvent<TScraperMessage>) => {
-        // TODO add valid origins check
-        const { type, payload } = event.data
-
-        if (!type || typeof payload !== 'object' || Array.isArray(payload)) {
-            return
+    useEffect(() => {
+        if (activeUrl) {
+            setUrl(activeUrl)
         }
+    }, [activeUrl])
 
-        switch (type) {
-            case EScraperMessageType.scrape: {
-                const {
-                    payload: { url, commonSelector, uniqueSelector, nodeType, stylingSelector, link }
-                } = event.data as TScraperMessage<TScraperSelectorFromExtension>
-
-                if (!commonSelector || !uniqueSelector || !nodeType) {
-                    return
-                }
-                if (!selectorItemSchema.safeParse({ url, commonSelector, uniqueSelector, nodeType }).success) {
-                    return
-                }
-                const fieldInstance = selectorsFieldRef.current
-                const currentFieldIndex = fieldInstance.fields.findIndex(item => item.commonSelector === commonSelector)
-                const currentUniqueFieldIndex = fieldInstance.fields.findIndex(
-                    item => item.uniqueSelector === uniqueSelector && item.blacklisted
-                )
-
-                const currentField = currentFieldIndex !== -1 ? fieldInstance.fields[currentFieldIndex] : null
-                const currentUniqueField =
-                    currentUniqueFieldIndex !== -1 ? fieldInstance.fields[currentUniqueFieldIndex] : null
-                let blacklisted = false
-                if (currentField) {
-                    if (currentUniqueField) {
-                        fieldInstance.update(currentUniqueFieldIndex, {
-                            ...currentUniqueField,
-                            blacklisted: false
-                        })
-                        if (currentField.id === currentUniqueField.id) {
-                            return
-                        }
-                        fieldInstance.remove(currentUniqueFieldIndex)
+    const onMessage = useCallback(
+        (event: MessageEvent<Response>) => {
+            const { type } = event.data
+            switch (type) {
+                case ResponseEvents.pageLoaded:
+                    const { payload } = event.data
+                    setUrl(payload.url)
+                    return sendOver()
+                case ResponseEvents.initSuccess:
+                    return sendOver()
+                case ResponseEvents.addCSSPath: {
+                    const { payload } = event.data
+                    if (!type || typeof payload !== 'object' || Array.isArray(payload)) {
                         return
                     }
-                    blacklisted = true
+                    const { url, node, selectors } = payload
+                    const { commonSelector, uniqueSelector, stylingSelector } = selectors
+
+                    const { nodeType } = node
+
+                    if (!commonSelector || !uniqueSelector || !nodeType) {
+                        return
+                    }
+                    if (!selectorItemSchema.safeParse(payload).success) {
+                        console.error('Invalid payload', payload)
+                        return
+                    }
+                    const fieldInstance = selectorsFieldRef.current
+                    const currentFieldIndex = fieldInstance.fields.findIndex(
+                        item => item.selectors.commonSelector === commonSelector
+                    )
+                    const currentUniqueFieldIndex = fieldInstance.fields.findIndex(
+                        item => item.selectors.uniqueSelector === uniqueSelector && item.blacklisted
+                    )
+
+                    const currentField = currentFieldIndex !== -1 ? fieldInstance.fields[currentFieldIndex] : null
+                    const currentUniqueField =
+                        currentUniqueFieldIndex !== -1 ? fieldInstance.fields[currentUniqueFieldIndex] : null
+                    let blacklisted = false
+                    if (currentField) {
+                        if (currentUniqueField) {
+                            fieldInstance.update(currentUniqueFieldIndex, {
+                                ...currentUniqueField,
+                                blacklisted: false
+                            })
+                            if (currentField.id === currentUniqueField.id) {
+                                return
+                            }
+                            fieldInstance.remove(currentUniqueFieldIndex)
+                            return
+                        }
+                        blacklisted = true
+                    }
+
+                    fieldInstance.append({
+                        url,
+                        selectors: {
+                            commonSelector,
+                            uniqueSelector,
+                            stylingSelector
+                        },
+                        node,
+                        color: randomColor({
+                            format: 'hex'
+                        }),
+                        label: '',
+                        value: null,
+                        valueToInput: null,
+                        action: ScrapperActions.SCRAPE_CONTENT,
+                        blacklisted
+                    })
+
+                    break
                 }
-
-                fieldInstance.append({
-                    url,
-                    commonSelector,
-                    uniqueSelector,
-                    nodeType,
-                    color: randomColor({
-                        format: 'hex'
-                    }),
-                    label: '',
-                    value: null,
-                    action: ScrapeActions.SCRAPE_CONTENT,
-                    valueToInput: null,
-                    blacklisted,
-                    link,
-                    stylingSelector
-                })
-
-                break
+                default:
+                    break
             }
-            default:
-                break
-        }
-    }, [])
+        },
+        [sendOver]
+    )
 
     useEffect(() => {
         window.addEventListener('message', onMessage, false)
@@ -215,6 +223,41 @@ const Home: NextPage = () => {
         }
     }, [isExtensionInstalled, queryEvent, router, setActiveUrl, setIframeLoading, urlController.field])
 
+    const onApply = useCallback(
+        (cssPath: CSSPath) => {
+            const { selectors, node, valueToInput, action } = cssPath
+            if (!formState.isValid) {
+                toast.error('Please fill the form before applying actions')
+                return
+            }
+            if (action === ScrapperActions.CLICK_AND_CONTINUE) {
+                window.postMessage({
+                    type: MessageEvents.applyActions,
+                    payload: {
+                        node: node,
+                        kind: action,
+                        uniqueSelector: selectors.uniqueSelector,
+                        value: null
+                    }
+                })
+                return
+            }
+
+            if (isInput(node)) {
+                window.postMessage({
+                    type: MessageEvents.applyActions,
+                    payload: {
+                        value: valueToInput ? String(valueToInput) : null,
+                        uniqueSelector: selectors.uniqueSelector,
+                        kind: action,
+                        node
+                    }
+                })
+            }
+        },
+        [formState.isValid]
+    )
+
     const onSubmit = handleSubmit(values => {
         setActiveUrl(current => {
             setIframeLoading(current !== values.url)
@@ -243,6 +286,10 @@ const Home: NextPage = () => {
     const gotoUrl = useCallback(
         (url: string) => {
             if (!formState.isValid) {
+                toast.error('Please fill the form before applying actions', {
+                    duration: 3000,
+                    position: 'top-center'
+                })
                 return
             }
             setActiveUrl(current => {
@@ -254,6 +301,13 @@ const Home: NextPage = () => {
     )
     return (
         <>
+            <Toaster
+                toastOptions={{
+                    custom: {
+                        duration: 3000
+                    }
+                }}
+            />
             {!isMobile && (
                 <DownloadModal
                     download={downloadPending}
@@ -306,7 +360,6 @@ const Home: NextPage = () => {
                         <Button
                             size="sm"
                             type="button"
-                            color="info"
                             endDecorator={<SendIcon />}
                             disabled={fields.length === 0 || !formState.isValid}
                             title="Run it"
@@ -333,7 +386,7 @@ const Home: NextPage = () => {
                                         autoFocus={process.env.NODE_ENV === 'production'}
                                         placeholder="Type a URL"
                                         startDecorator={<SearchRoundedIcon color="primary" />}
-                                        value={field.value}
+                                        value={url || field.value}
                                         onChange={field.onChange}
                                         onBlur={field.onBlur}
                                         sx={{
@@ -362,6 +415,8 @@ const Home: NextPage = () => {
                 <Layout.Side
                     sx={{
                         display: {
+                            height: 'calc(100vh - 100px)',
+                            overflowY: 'auto',
                             xs: 'none',
                             md: 'flex'
                         }
@@ -373,93 +428,99 @@ const Home: NextPage = () => {
                             flex: 1
                         }}
                     >
-                        <CustomFields />
-                        {Object.keys(fieldsByURL)?.length > 1 && (
-                            <Typography
-                                level="body1"
-                                sx={{
-                                    marginX: 4,
-                                    marginY: 2
-                                }}
-                            >
-                                Previously selected elements
-                            </Typography>
-                        )}
-                        {Object.keys(fieldsByURL).map(el => {
-                            if (el === activeUrl) {
-                                return null
-                            }
-
-                            return (
-                                <Sheet
-                                    variant="soft"
-                                    color="neutral"
+                        <CustomFields activeUrl={url} />
+                        {Object.keys(fieldsByURL)?.length > 0 && (
+                            <Collapsable defaultOpened title="Previously selected elements">
+                                <Typography
+                                    level="body1"
                                     sx={{
-                                        paddingY: 1,
-                                        marginBottom: 1,
-                                        paddingX: 2
+                                        marginX: 4,
+                                        marginY: 2
                                     }}
-                                    key={el}
                                 >
-                                    <Typography
-                                        level="body2"
-                                        sx={{
-                                            marginX: 4
-                                        }}
-                                        key={el}
-                                    >
-                                        {el} ({fieldsByURL[el]?.length} elements selcted )
-                                    </Typography>
-                                </Sheet>
-                            )
-                        })}
-                        {/* TODO: use a memo for blacklisted elements */}
-                        {fieldsByURL[activeUrl]?.length > 0 ? (
-                            <>
-                                <Typography px={3} py={2}>
-                                    Selected elements
+                                    Previously selected elements
                                 </Typography>
-                                {fieldsByURL[activeUrl]
-                                    .filter(el => !el.blacklisted)
-                                    .map(field => {
-                                        const index = fields.findIndex(item => item.id === field.id)
-                                        if (index === -1) {
-                                            return null
-                                        }
-                                        return (
-                                            <SelectedCSSSelectors
-                                                gotoUrl={gotoUrl}
-                                                key={field.id}
-                                                watch={watchAllFields}
-                                                field={field}
-                                                index={index}
-                                                control={control}
-                                                selectorsField={selectorsField}
-                                            />
-                                        )
-                                    })}
-                                {fieldsByURL[activeUrl]?.filter(el => el.blacklisted).length > 0 && (
-                                    <Typography px={3}> BlackListed elements </Typography>
+
+                                {Object.keys(fieldsByURL).map(el => {
+                                    if (el === url) {
+                                        return null
+                                    }
+
+                                    return (
+                                        <Sheet
+                                            variant="soft"
+                                            color="neutral"
+                                            sx={{
+                                                paddingY: 1,
+                                                marginBottom: 1,
+                                                paddingX: 2
+                                            }}
+                                            key={el}
+                                        >
+                                            <Typography
+                                                level="body2"
+                                                sx={{
+                                                    marginX: 4
+                                                }}
+                                                key={el}
+                                            >
+                                                {el} ({fieldsByURL[el]?.length} elements selected )
+                                            </Typography>
+                                        </Sheet>
+                                    )
+                                })}
+                            </Collapsable>
+                        )}
+                        {/* TODO: use a memo for blacklisted elements */}
+                        {fieldsByURL[url]?.length > 0 ? (
+                            <>
+                                <Collapsable title="Selected elements" defaultOpened>
+                                    {fieldsByURL[url]
+                                        .filter(el => !el.blacklisted)
+                                        .map(field => {
+                                            const index = fields.findIndex(item => item.id === field.id)
+                                            if (index === -1) {
+                                                return null
+                                            }
+                                            return (
+                                                <SelectedCSSSelectors
+                                                    onApply={onApply}
+                                                    gotoUrl={gotoUrl}
+                                                    key={field.id}
+                                                    watch={watchAllFields}
+                                                    field={field}
+                                                    index={index}
+                                                    control={control}
+                                                    selectorsField={selectorsField}
+                                                />
+                                            )
+                                        })}
+                                </Collapsable>
+
+                                {fieldsByURL[url]?.filter(el => el.blacklisted).length > 0 && (
+                                    <Collapsable defaultOpened title="Blacklisted elements">
+                                        {fieldsByURL[url]
+                                            ?.filter(el => el.blacklisted)
+                                            .map(field => {
+                                                const index = fields.findIndex(item => item.id === field.id)
+                                                if (index === -1) {
+                                                    return null
+                                                }
+                                                return (
+                                                    <SelectedCSSSelectors
+                                                        onApply={onApply}
+                                                        gotoUrl={gotoUrl}
+                                                        key={field.id}
+                                                        watch={watchAllFields}
+                                                        field={field}
+                                                        index={index}
+                                                        control={control}
+                                                        selectorsField={selectorsField}
+                                                    />
+                                                )
+                                            })}
+                                    </Collapsable>
                                 )}
-                                {fieldsByURL[activeUrl]
-                                    ?.filter(el => el.blacklisted)
-                                    .map(field => {
-                                        const index = fields.findIndex(item => item.id === field.id)
-                                        if (index === -1) {
-                                            return null
-                                        }
-                                        return (
-                                            <SelectedCSSSelectors
-                                                gotoUrl={gotoUrl}
-                                                key={field.id}
-                                                watch={watchAllFields}
-                                                field={field}
-                                                index={index}
-                                                control={control}
-                                                selectorsField={selectorsField}
-                                            />
-                                        )
-                                    })}
                             </>
                         ) : (
                             <Box
@@ -471,7 +532,7 @@ const Home: NextPage = () => {
                                     textAlign: 'center'
                                 }}
                             >
-                                {activeUrl && isExtensionInstalled && (
+                                {url && isExtensionInstalled && (
                                     <>
                                         <Box
                                             sx={{
@@ -512,7 +573,7 @@ const Home: NextPage = () => {
                             <CircularProgress color="primary" size="lg" />
                         </Box>
                     )}
-                    {activeUrl && !isExtensionInstallPending && !isMobile ? (
+                    {url && !isExtensionInstallPending && !isMobile ? (
                         <Browser url={activeUrl} enabled={isExtensionInstalled} onLoad={onIframeLoad} />
                     ) : (
                         <Box
