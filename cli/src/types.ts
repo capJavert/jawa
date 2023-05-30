@@ -1,3 +1,11 @@
+import { type CSSPath } from './globalTypes'
+
+export interface CustomFieldResult {
+    type: 'customField'
+    label: string
+    value: string
+    url: string
+}
 export interface BaseResult {
     url: string
     label: string
@@ -15,7 +23,10 @@ export interface ScrapperErrorResult extends BaseResult {
     error: string
 }
 
-export type ScrapperResult = ScrapperSuccessfulResult | ScrapperErrorResult
+export type ScrapperResult =
+    | ScrapperSuccessfulResult
+    | ScrapperErrorResult
+    | CustomFieldResult
 
 export interface ScrappedContent {
     tag: string
@@ -38,4 +49,25 @@ export interface ScrappedContent {
         }>
         currentValue: string
     }
+}
+export interface Item {
+    items: CSSPath[]
+    customFields: Array<{
+        label: string
+        value: string
+        url: string
+    }>
+    pagination:
+        | {
+              enabled: false
+              paginationStart: string
+              paginationEnd: string
+              paginationTemplate: string
+          }
+        | {
+              enabled: true
+              paginationStart: string
+              paginationEnd: string
+              paginationTemplate: string
+          }
 }

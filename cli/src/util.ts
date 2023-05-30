@@ -1,4 +1,4 @@
-import { BaseNode, NodeInput, ScrapperActions } from '../../types'
+import { ScrapperActions } from './globalTypes'
 
 export const parseJson = <T>(json: string): T => {
     try {

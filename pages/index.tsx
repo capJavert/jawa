@@ -1,6 +1,7 @@
 /* eslint-disable react/jsx-key */
 import { zodResolver } from '@hookform/resolvers/zod'
 import Portal from '@mui/base/Portal'
+import { Refresh } from '@mui/icons-material'
 import HighlightAltIcon from '@mui/icons-material/HighlightAlt'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import SendIcon from '@mui/icons-material/Send'
@@ -29,10 +30,10 @@ import { toast, Toaster } from 'react-hot-toast'
 
 import Browser from '../components/Browser'
 import { Collapsable } from '../components/collapsible'
-import { CustomFields } from '../components/CustomFields'
+import { useCustomFields } from '../components/CustomFields'
 import DownloadModal from '../components/DownloadModal'
 import Layout from '../components/Layout'
-import { Pagination } from '../components/Pagination'
+import { usePagination } from '../components/Pagination'
 import { SelectedCSSSelectors } from '../components/SelectedCSSSelectors'
 import { Message, Response } from '../eventMessages'
 import { useExtensionPort } from '../hooks/useExtensionPort'
@@ -96,6 +97,14 @@ const Home: NextPage = () => {
             }
         }
     }, [activeUrl])
+    const {
+        customFields,
+        isValid: isCustomFieldValid,
+        CustomFieldElement
+    } = useCustomFields({
+        activeUrl: url
+    })
+    const { paginationFields, isValid: isPaginationValid, PaginationElement } = usePagination()
 
     const onMessage = useCallback(
         (event: MessageEvent<Response>) => {
@@ -310,13 +319,23 @@ const Home: NextPage = () => {
                 <DownloadModal
                     download={downloadPending}
                     onSubmit={handleSubmit(values => {
+                        if (!isCustomFieldValid) {
+                            toast.error('Fix issue with custom fields before downloading')
+                            return
+                        }
+                        if (paginationFields.enabled && !isPaginationValid) {
+                            toast.error('Fix issue with pagination before downloading')
+                            return
+                        }
                         const aElement = document.createElement('a')
                         aElement.setAttribute('download', `vscraper-config-${downloadPending}.json`)
                         const href = URL.createObjectURL(
                             new Blob(
                                 [
                                     JSON.stringify({
-                                        items: values.items
+                                        items: values.items,
+                                        customFields: customFields,
+                                        pagination: paginationFields
                                     })
                                 ],
                                 {
@@ -358,8 +377,25 @@ const Home: NextPage = () => {
                         <Button
                             size="sm"
                             type="button"
+                            endDecorator={<Refresh />}
+                            title="Open in new tab"
+                            onClick={() => {
+                                // reload page
+                                window.location.reload()
+                            }}
+                        >
+                            Reset
+                        </Button>
+                        <Button
+                            size="sm"
+                            type="button"
                             endDecorator={<SendIcon />}
-                            disabled={fields.length === 0 || !formState.isValid}
+                            disabled={
+                                fields.length === 0 ||
+                                !formState.isValid ||
+                                !isCustomFieldValid ||
+                                (paginationFields.enabled && !isPaginationValid)
+                            }
                             title="Run it"
                             onClick={handleSubmit(data => {
                                 const sha1Instance = sha1.create()
@@ -426,7 +462,7 @@ const Home: NextPage = () => {
                             flex: 1
                         }}
                     >
-                        <CustomFields activeUrl={url} />
+                        {CustomFieldElement}
                         {Object.keys(fieldsByURL)?.length > 0 && (
                             <Collapsable defaultOpened title="Previously selected elements">
                                 <Typography
@@ -547,7 +583,7 @@ const Home: NextPage = () => {
                                 )}
                             </Box>
                         )}
-                        <Pagination />
+                        {PaginationElement}
                     </Layout.Container>
                 </Layout.Side>
                 <Layout.Main

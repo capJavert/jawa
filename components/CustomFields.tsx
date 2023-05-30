@@ -43,8 +43,8 @@ const schema = z.object({
     customFields: z.array(customFieldSchema)
 })
 
-export const CustomFields = ({ activeUrl }: Props) => {
-    const { control } = useForm<CustomFields>({
+export const useCustomFields = ({ activeUrl }: Props) => {
+    const { control, formState, watch } = useForm<CustomFields>({
         resolver: zodResolver(schema),
         mode: 'onTouched'
     })
@@ -54,6 +54,7 @@ export const CustomFields = ({ activeUrl }: Props) => {
         name: 'customFields'
     })
 
+    const { customFields: customFieldsValues } = watch()
     const { fields, append, remove } = customFields
 
     const addCustomField = () => {
@@ -71,7 +72,7 @@ export const CustomFields = ({ activeUrl }: Props) => {
         })
     }
 
-    return (
+    const CustomFieldElement = (
         <Layout.Container
             sx={{
                 marginTop: '.4rem'
@@ -170,4 +171,10 @@ export const CustomFields = ({ activeUrl }: Props) => {
             </Collapsable>
         </Layout.Container>
     )
+
+    return {
+        CustomFieldElement,
+        customFields: customFieldsValues,
+        isValid: formState.isValid
+    }
 }

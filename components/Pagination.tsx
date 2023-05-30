@@ -5,8 +5,6 @@ import z from 'zod'
 
 import { Collapsable } from './collapsible'
 
-type Props = {}
-
 type Pagination = {
     enabled: boolean
     paginationStart: string
@@ -21,15 +19,17 @@ const schema = z.object({
     paginationTemplate: z.string().regex(/{{page}}/)
 })
 
-export const Pagination = ({}: Props) => {
-    const { control, watch } = useForm<Pagination>({
+export const usePagination = () => {
+    const { control, watch, formState } = useForm<Pagination>({
         resolver: zodResolver(schema),
         mode: 'onTouched'
     })
 
-    const enabled = watch('enabled')
+    const paginationFields = watch()
 
-    return (
+    const { enabled } = paginationFields
+
+    const PaginationElement = (
         <Collapsable
             title="Pagination"
             defaultOpened={false}
@@ -92,4 +92,9 @@ export const Pagination = ({}: Props) => {
             )}
         </Collapsable>
     )
+    return {
+        PaginationElement,
+        isValid: formState.isValid,
+        paginationFields
+    }
 }

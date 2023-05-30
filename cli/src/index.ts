@@ -1,18 +1,19 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { promises as fs } from 'fs'
-import puppeteer from 'puppeteer'
+import * as puppeteer from 'puppeteer'
 import yargs, { type ArgumentsCamelCase } from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import { type CSSPath, ScrapperActions } from '../../types'
+import { type CSSPath, ScrapperActions } from './globalTypes'
 import {
+    scrapeItems,
     scrapeTableInPageAsJSON,
     scrapeTableInPageFromUrlAsHTML,
-    scrappeContent,
 } from './scrapper'
-import { type ScrapperResult } from './types'
+import { type Item, type ScrapperResult } from './types'
 import { getSelector, parseJson } from './util'
 
 const scrape = async (
@@ -24,8 +25,7 @@ const scrape = async (
         indentSize: number
     }
 ): Promise<void> => {
-    let browser
-
+    let browser: puppeteer.Browser | null = null
     const logger = (level: string, ...args: string[]): void => {
         if (!options.quiet) {
             console[level](...args)
@@ -35,166 +35,115 @@ const scrape = async (
     try {
         // TODO: validate using zod
         const jsonData = (await fs.readFile(configPath)).toString()
-        const config = parseJson<{ items: CSSPath[] }>(jsonData)
+        const config = parseJson<Item>(jsonData)
+
+        if (!Array.isArray(config.items)) {
+            throw new Error('Config invalid, Array expected for items')
+        }
 
         logger('log', 'Loaded config')
 
         logger('log', 'Starting headless browser')
 
-        browser = await puppeteer.launch()
+        browser = await puppeteer.launch({
+            headless: false,
+        })
         const page = await browser.newPage()
         await page.emulate({
-            name: 'Desktop',
             userAgent: options.userAgent,
             viewport: {
                 width: 1600,
                 height: 900,
             },
         })
-
-        if (!Array.isArray(config.items)) {
-            throw new Error('Config invalid, Array expected for items')
-        }
+        page.exposeFunction('scrapeTableInPageAsJSON', scrapeTableInPageAsJSON)
+        page.exposeFunction(
+            'scrapeTableInPageFromUrlAsHTML',
+            scrapeTableInPageFromUrlAsHTML
+        )
+        page.exposeFunction('waitForNavigation', page.waitForNavigation)
 
         logger('log', 'Scraping started')
 
+        // TODO: remove this
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        page.on('console', async (msg) => {
+            console.log(msg.text())
+        })
+        const { items, customFields, pagination } = config
         const results: ScrapperResult[] = []
 
-        for (let i = 0; i < config.items.length; i += 1) {
-            const item = config.items[i]
-            const { selectors, node, url, action, label, valueToInput } = item
-            try {
-                if (page.url() !== item.url) {
-                    await page.goto(item.url)
-                    logger('log', `Navigated to ${item.url}`)
-                }
-
-                logger(
-                    'log',
-                    'Looking for selector',
-                    selectors.commonSelector ?? selectors.uniqueSelector
+        if (pagination.enabled) {
+            const { paginationStart, paginationEnd, paginationTemplate } =
+                pagination
+            const start = parseInt(paginationStart)
+            const end = parseInt(paginationEnd)
+            if (isNaN(start) || isNaN(end)) {
+                throw new Error('Pagination start and end must be numbers')
+            }
+            const firstUrl = items[0].url
+            const paginatedUrls = [firstUrl]
+            for (let i = start; i < end; i++) {
+                paginatedUrls.push(
+                    paginationTemplate.replace(/{{page}}/g, i.toString())
                 )
-                const selector = getSelector(action, selectors)
-
-                const data = await page.$$eval(
-                    selector,
-                    async (elements: HTMLElement[]) => {
-                        const collection = []
-                        if (
-                            action === ScrapperActions.SCRAPE_CONTENT_FROM_URLS
-                        ) {
-                            for (const element of elements) {
-                                const link = element.getAttribute('href')
-                                if (
-                                    link.endsWith('.pdf') ||
-                                    link.endsWith('.doc') ||
-                                    link.endsWith('.docx') ||
-                                    link.endsWith('.png') ||
-                                    link.endsWith('.jpeg') ||
-                                    link.endsWith('.jpg') ||
-                                    link.endsWith('.gif') ||
-                                    link.endsWith('.svg') ||
-                                    link.endsWith('.zip') ||
-                                    link.endsWith('.rar') ||
-                                    link.endsWith('.7z')
-                                ) {
-                                    collection.push(scrappeContent(element))
-                                    continue
-                                }
-                                const responses =
-                                    await scrapeTableInPageFromUrlAsHTML(link)
-                                collection.push(responses)
-                            }
-                            return
-                        }
-                        for (const element of elements) {
-                            if (action === ScrapperActions.SCRAPE_CONTENT) {
-                                collection.push(scrappeContent(element))
-                            }
-                            if (
-                                action === ScrapperActions.INPUT_VALUE &&
-                                element instanceof HTMLInputElement
-                            ) {
-                                if (typeof valueToInput === 'boolean') {
-                                    element.checked = valueToInput
-                                } else {
-                                    element.value = valueToInput
-                                }
-                                element.dispatchEvent(new Event('input'))
-                                element.dispatchEvent(new Event('change'))
-                            }
-
-                            if (
-                                action ===
-                                    ScrapperActions.INPUT_VALUE_AND_ENTER &&
-                                element instanceof HTMLInputElement
-                            ) {
-                                if (typeof valueToInput === 'boolean') {
-                                    element.checked = valueToInput
-                                } else {
-                                    element.value = valueToInput
-                                }
-                                element.dispatchEvent(new Event('input'))
-                                element.dispatchEvent(new Event('change'))
-                                element.dispatchEvent(
-                                    new KeyboardEvent('keydown', {
-                                        key: 'Enter',
-                                    })
-                                )
-                            }
-                            if (action === ScrapperActions.CLICK_AND_CONTINUE) {
-                                const event = new MouseEvent('click', {
-                                    bubbles: true,
-                                })
-                                element.dispatchEvent(event)
-                                await page.waitForNavigation()
-                            }
-                            if (
-                                action ===
-                                ScrapperActions.CLICK_AND_SCRAPE_CONTENT
-                            ) {
-                                const event = new MouseEvent('click', {
-                                    bubbles: true,
-                                })
-                                element.dispatchEvent(event)
-                                await page.waitForNavigation()
-                                const getHTMLasText = page.evaluate(
-                                    () => document.documentElement.innerText
-                                )
-                                collection.push(
-                                    scrapeTableInPageAsJSON(getHTMLasText)
-                                )
-                            }
+            }
+            for (const url of paginatedUrls) {
+                const updatedItems = items.map((item) => {
+                    if (item.url === firstUrl) {
+                        return {
+                            ...item,
+                            url,
                         }
                     }
+                    return item
+                })
+
+                const result = await scrapeItems(
+                    updatedItems,
+                    page,
+                    logger,
+                    options.verbose
                 )
-
-                results.push({
-                    type: 'result',
-                    url,
-                    selector,
-                    label,
-                    data,
-                })
-            } catch (error) {
-                const err = error as Error
-                if (options.verbose) {
-                    logger('error', error)
-                } else {
-                    logger('error', `Scraping error: ${err.message}`)
-                }
-
-                results.push({
-                    label,
-                    selector: getSelector(action, selectors),
-                    type: 'error',
-                    url,
-                    error: err.message,
-                })
+                results.push(...result)
             }
+        } else {
+            const result = await scrapeItems(
+                items,
+                page,
+                logger,
+                options.verbose
+            )
+            results.push(...result)
+        }
+        for (const customField of customFields) {
+            const { label, value, url } = customField
+            let customFieldValue = null
+            const pattern1 = /\{\{(.*?)\}\}/g
+            if (pattern1.test(value)) {
+                const key = value.replace(pattern1, '$1')
+                if (key === 'dateScrapped') {
+                    customFieldValue = new Date().toISOString()
+                }
+            }
+            const pattern2 = /"([^"]*)"/g
+            if (pattern2.test(value)) {
+                const val = value.replace(pattern2, '$1')
+                customFieldValue = val
+            }
+            if (!customFieldValue) {
+                continue
+            }
+            results.push({
+                type: 'customField',
+                label,
+                value: customFieldValue,
+                url,
+            })
         }
 
         logger('log', 'Done!')
+        console.log(JSON.stringify(results, null, options.indentSize))
     } catch (error) {
         const err = error as Error
         if (options.verbose) {
