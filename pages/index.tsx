@@ -28,10 +28,11 @@ import { Controller, FieldArrayWithId, useController, useFieldArray, useForm } f
 import { toast, Toaster } from 'react-hot-toast'
 
 import Browser from '../components/Browser'
-import { Collapsable } from '../components/Collpsable'
+import { Collapsable } from '../components/collapsible'
 import { CustomFields } from '../components/CustomFields'
 import DownloadModal from '../components/DownloadModal'
 import Layout from '../components/Layout'
+import { Pagination } from '../components/Pagination'
 import { SelectedCSSSelectors } from '../components/SelectedCSSSelectors'
 import { Message, Response } from '../eventMessages'
 import { useExtensionPort } from '../hooks/useExtensionPort'
@@ -49,10 +50,12 @@ const getPortalContainer = (() => () => {
 })()
 
 const Home: NextPage = () => {
+    const iframeRef = useRef<HTMLIFrameElement>(null)
     const { control, handleSubmit, formState, watch } = useForm<TScraperConfig>({
         resolver: zodResolver(schema),
         mode: 'onSubmit'
     })
+    const [downloadPending, setDownloadPending] = useState<string | false>(false)
     const [url, setUrl] = useState('')
     const watchAllFields = watch(['items'])
     const selectorsField = useFieldArray({
@@ -82,21 +85,15 @@ const Home: NextPage = () => {
 
     const selectorsFieldRef = useRef(selectorsField)
     selectorsFieldRef.current = selectorsField
-    const {
-        activeUrl,
-        isIframeLoading,
-        downloadPending,
-        router,
-        setActiveUrl,
-        setIframeLoading,
-        setDownloadPending,
-        queryEvent,
-        urlController
-    } = useQueryURL(control)
+    const { activeUrl, isIframeLoading, router, setActiveUrl, setIframeLoading, queryEvent, urlController } =
+        useQueryURL(control)
 
     useEffect(() => {
         if (activeUrl) {
             setUrl(activeUrl)
+            if (iframeRef.current) {
+                iframeRef.current.src = activeUrl
+            }
         }
     }, [activeUrl])
 
@@ -280,7 +277,8 @@ const Home: NextPage = () => {
     }, [fields])
     const onIframeLoad = useCallback(() => {
         setIframeLoading(false)
-    }, [setIframeLoading])
+        sendOver()
+    }, [sendOver, setIframeLoading])
     const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))
 
     const gotoUrl = useCallback(
@@ -549,6 +547,7 @@ const Home: NextPage = () => {
                                 )}
                             </Box>
                         )}
+                        <Pagination />
                     </Layout.Container>
                 </Layout.Side>
                 <Layout.Main
@@ -573,8 +572,8 @@ const Home: NextPage = () => {
                             <CircularProgress color="primary" size="lg" />
                         </Box>
                     )}
-                    {url && !isExtensionInstallPending && !isMobile ? (
-                        <Browser url={activeUrl} enabled={isExtensionInstalled} onLoad={onIframeLoad} />
+                    {activeUrl && !isExtensionInstallPending && !isMobile ? (
+                        <Browser ref={iframeRef} url={activeUrl} enabled={isExtensionInstalled} onLoad={onIframeLoad} />
                     ) : (
                         <Box
                             sx={{

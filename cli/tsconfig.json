@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "target":"ES2017",
+    "moduleDetection": "auto",
+    "importHelpers": false,
+    "alwaysStrict": true,
+    "allowSyntheticDefaultImports": true,
+    "module": "ESNext",
+    "moduleResolution": "node"
+  }
+}

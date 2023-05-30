@@ -6,8 +6,8 @@ import { toast, Toaster } from 'react-hot-toast'
 import z from 'zod'
 
 import { CustomFieldsEnum } from '../types'
+import { Collapsable } from './collapsible'
 import Layout from './Layout'
-import { Collapsable } from './Collpsable'
 
 type Props = {
     activeUrl: string

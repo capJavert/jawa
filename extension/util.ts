@@ -25,7 +25,7 @@ export const getCommonSelector = (
 export const getNode = (element: Element) => {
     const elementType = element.getAttribute('type') || null
     const link = element.getAttribute('href') || null
-    const fullLink = link && link.startsWith('http') ? link : `${window.location.origin}${link}`
+    const fullLink = link && link.startsWith('http') ? link : `${window.location.href}${link}`
     const nodeType = element.localName
 
     if (elementsWithInput.includes(nodeType)) {
@@ -87,7 +87,8 @@ export const updateCSSPath = (selectors: CSSPath[], cssPaths: CSSPath[]) => {
     }
 
     nonBlackListed.forEach(selector => {
-        const { color } = selector
+        const { color, url } = selector
+        if (url !== window.location.href) return
         const { stylingSelector } = selector.selectors
         if (!stylingSelector) return
         try {

@@ -5,14 +5,15 @@ import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
 import Typography from '@mui/joy/Typography'
 import Link from 'next/link'
-import { ReactEventHandler, useMemo } from 'react'
+import { forwardRef, ReactEventHandler, useMemo } from 'react'
 
 import { BraveIcon } from './icons/Brave'
 import { ChromeIcon } from './icons/Chrome'
 import { EdgeIcon } from './icons/Edge'
 import { OperaIcon } from './icons/Opera'
 
-const Browser = ({ url, enabled = true, onLoad }: { url: string; enabled: boolean; onLoad?: ReactEventHandler }) => {
+type Props = { url: string; enabled: boolean; onLoad?: ReactEventHandler }
+const Browser = forwardRef<HTMLIFrameElement, Props>(function BrowserElement({ url, enabled = true, onLoad }, ref) {
     const extensionId = process.env.NEXT_PUBLIC_EXTENSION_CHROME_ID
     const downloadLink = `https://chrome.google.com/webstore/detail/jawa-visual-scraper/${extensionId}`
     const browserName = useMemo(() => {
@@ -48,95 +49,97 @@ const Browser = ({ url, enabled = true, onLoad }: { url: string; enabled: boolea
         }
     }, [browserName])
 
-    if (!enabled) {
-        return (
-            <Box
-                sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    flexDirection: 'column',
-                    fontSize: '100px',
-                    flex: 1,
-                    p: 2
-                }}
-            >
-                <ExtensionIcon
-                    fontSize="inherit"
-                    color="primary"
-                    sx={{
-                        marginBottom: 5
-                    }}
-                />
-
-                <Typography
-                    level="h2"
-                    textAlign="center"
-                    sx={{
-                        marginBottom: 2
-                    }}
-                >
-                    Browser extension not installed
-                </Typography>
-
-                <Alert
-                    color="info"
-                    sx={{
-                        marginBottom: 5,
-                        alignItems: 'flex-start',
-                        maxWidth: '600px'
-                    }}
-                    startDecorator={<InfoIcon />}
-                >
-                    <div>
-                        <Typography fontSize="sm" sx={{ opacity: 0.8 }}>
-                            We can&apos;t load <strong>{url}</strong> until you install our extension.
-                        </Typography>
-                    </div>
-                </Alert>
-
-                <Typography
-                    level="body1"
-                    sx={{
-                        marginBottom: 5,
-                        maxWidth: '700px'
-                    }}
-                >
-                    Our companion extension is required so we can load other websites inside your browser and allow you
-                    to scrape them.
-                </Typography>
-
-                <Link href={downloadLink} passHref>
-                    <Button
-                        title={`Add to ${browserName}`}
-                        onClick={() => {
-                            if (url) {
-                                localStorage.setItem('saved-install-url', url)
-                            }
-                        }}
-                        component="a"
-                        startDecorator={<BrowserIcon width={30} height={30} />}
-                        size="lg"
-                    >
-                        Add to {browserName}
-                    </Button>
-                </Link>
-            </Box>
-        )
-    }
-
     return (
-        <iframe
-            tabIndex={-1}
-            src={url}
-            id="vscraper"
-            sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts"
-            width="100%"
-            height="100%"
-            frameBorder={0}
-            onLoad={onLoad}
-        ></iframe>
+        <>
+            {!enabled && (
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        flexDirection: 'column',
+                        fontSize: '100px',
+                        flex: 1,
+                        p: 2
+                    }}
+                >
+                    <ExtensionIcon
+                        fontSize="inherit"
+                        color="primary"
+                        sx={{
+                            marginBottom: 5
+                        }}
+                    />
+
+                    <Typography
+                        level="h2"
+                        textAlign="center"
+                        sx={{
+                            marginBottom: 2
+                        }}
+                    >
+                        Browser extension not installed
+                    </Typography>
+
+                    <Alert
+                        color="info"
+                        sx={{
+                            marginBottom: 5,
+                            alignItems: 'flex-start',
+                            maxWidth: '600px'
+                        }}
+                        startDecorator={<InfoIcon />}
+                    >
+                        <div>
+                            <Typography fontSize="sm" sx={{ opacity: 0.8 }}>
+                                We can&apos;t load <strong>{url}</strong> until you install our extension.
+                            </Typography>
+                        </div>
+                    </Alert>
+
+                    <Typography
+                        level="body1"
+                        sx={{
+                            marginBottom: 5,
+                            maxWidth: '700px'
+                        }}
+                    >
+                        Our companion extension is required so we can load other websites inside your browser and allow
+                        you to scrape them.
+                    </Typography>
+
+                    <Link href={downloadLink} passHref>
+                        <Button
+                            title={`Add to ${browserName}`}
+                            onClick={() => {
+                                if (url) {
+                                    localStorage.setItem('saved-install-url', url)
+                                }
+                            }}
+                            component="a"
+                            startDecorator={<BrowserIcon width={30} height={30} />}
+                            size="lg"
+                        >
+                            Add to {browserName}
+                        </Button>
+                    </Link>
+                </Box>
+            )}
+            <iframe
+                style={{
+                    display: enabled ? 'block' : 'none'
+                }}
+                ref={ref}
+                tabIndex={-1}
+                id="vscraper"
+                sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts"
+                width="100%"
+                height="100%"
+                frameBorder={0}
+                onLoad={onLoad}
+            />
+        </>
     )
-}
+})
 
 export default Browser

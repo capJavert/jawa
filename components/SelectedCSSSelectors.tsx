@@ -257,6 +257,10 @@ export const SelectedCSSSelectors = ({ field, index, control, selectorsField, wa
                                                     error={!!fieldState.error}
                                                     helperText={fieldState.error?.message}
                                                     size="sm"
+                                                    sx={{
+                                                        width: '100%',
+                                                        marginRight: '0.5rem'
+                                                    }}
                                                     name={`items.${index}.valeToInput`}
                                                     placeholder="value to input"
                                                     variant="outlined"

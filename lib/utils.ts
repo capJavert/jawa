@@ -7,7 +7,11 @@ export const determineActions = (nodeType: string, inputType: null | string) => 
     }
     if (['input', 'textarea', 'select', 'button'].includes(nodeType)) {
         if (inputType === 'submit' || inputType === 'button') {
-            return [ScrapperActions.CLICK_AND_CONTINUE, ScrapperActions.SCRAPE_CONTENT]
+            return [
+                ScrapperActions.CLICK_AND_CONTINUE,
+                ScrapperActions.CLICK_AND_SCRAPE_CONTENT,
+                ScrapperActions.SCRAPE_CONTENT
+            ]
         }
         return [ScrapperActions.INPUT_VALUE, ScrapperActions.SCRAPE_CONTENT, ScrapperActions.INPUT_VALUE_AND_ENTER]
     }

@@ -13,7 +13,6 @@ export const useQueryURL = (control: Control<TScraperConfig, any>) => {
     const urlController = useController({ name: 'url', control })
 
     const [isIframeLoading, setIframeLoading] = useState(false)
-    const [downloadPending, setDownloadPending] = useState<string | false>(false)
 
     useEffect(() => {
         if (queryUrl) {
@@ -44,8 +43,6 @@ export const useQueryURL = (control: Control<TScraperConfig, any>) => {
         urlController,
         activeUrl,
         isIframeLoading,
-        downloadPending,
-        setDownloadPending,
         queryEvent
     }
 }

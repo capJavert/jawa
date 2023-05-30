@@ -3,26 +3,47 @@
     "version": "1.0.1",
     "description": "Visual scraper interface, exports to puppeteer script which you can run anywhere.",
     "main": "index.js",
+    "type": "module",
+    "readme": "readme.md",
+    "author": "Henok Tsegaye <maxhenock@gmail.com> (https://henoktsegaye.com)",
     "scripts": {
+        "build": "tsc",
+        "lint": "eslint --ext .ts src",
+        "dev": "tsx src/index.ts",
+        "start": "node dist/index.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "bin": {
-        "jawa": "./index.js",
-        "vscraper-cli": "./index.js",
-        "vscraper": "./index.js"
+        "jawa": "./dist/index.js",
+        "vscraper-cli": "./dist/index.js",
+        "vscraper": "./dist/index.js"
     },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/capJavert/vscraper.git"
     },
-    "author": "capJavert",
     "license": "MIT",
     "bugs": {
         "url": "https://github.com/capJavert/vscraper/issues"
     },
     "homepage": "https://github.com/capJavert/vscraper#readme",
+    "devDependencies": {
+        "@types/node": "^20.1.2",
+        "@typescript-eslint/eslint-plugin": "^5.59.5",
+        "@typescript-eslint/parser": "^5.59.5",
+        "eslint": "^8.40.0",
+        "eslint-config-standard-with-typescript": "^34.0.1",
+        "eslint-plugin-import": "^2.25.2",
+        "eslint-plugin-n": "^15.0.0",
+        "eslint-plugin-prettier": "^4.2.1",
+        "eslint-plugin-promise": "^6.0.0",
+        "prettier": "^2.8.8",
+        "tsx": "^3.12.7",
+        "typescript": "^5.0.4"
+    },
     "dependencies": {
         "puppeteer": "18.2.1",
+        "tabletojson": "^2.0.7",
         "yargs": "17.6.0"
     }
 }

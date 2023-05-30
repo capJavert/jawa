@@ -28,9 +28,18 @@ const main = async () => {
     }
 
     const numberMatch = /\d/
-    console.log('======injecting script')
+    window?.top?.postMessage(
+        {
+            type: ResponseEvents.pageLoaded,
+            payload: {
+                url: window.location.href
+            }
+        },
+        {
+            targetOrigin: '*'
+        }
+    )
     window.addEventListener('load', () => {
-        console.log('DOM fully loaded and parsed')
         window?.top?.postMessage(
             {
                 type: ResponseEvents.pageLoaded,
