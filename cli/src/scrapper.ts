@@ -1,9 +1,9 @@
 import type * as puppeteer from 'puppeteer'
 import { Tabletojson } from 'tabletojson'
 
-import { type CSSPath, ScrapperActions } from './globalTypes'
-import { type ScrapperResult } from './types'
-import { getSelector } from './util'
+import { type CSSPath, ScrapperActions } from './globalTypes.js'
+import { type ScrapperResult } from './types.js'
+import { getSelector } from './util.js'
 
 export const scrapeTableInPageAsJSON = (htmlPage: string): string[] => {
     return Tabletojson.convert(htmlPage)
@@ -18,7 +18,7 @@ export const scrapeTableInPageFromUrlAsHTML = async (
 export const scrapeItems = async (
     items: CSSPath[],
     page: puppeteer.Page,
-    logger: (level: string, ...args: string[]) => void,
+    logger: (level: 'log' | 'warn' | 'error', ...args: string[]) => void,
     verbose: boolean
 ): Promise<ScrapperResult[]> => {
     const results: ScrapperResult[] = []
@@ -32,26 +32,16 @@ export const scrapeItems = async (
         }
         try {
             if (
-                page.url() !== item.url &&
-                ![
-                    ScrapperActions.CLICK_AND_CONTINUE,
-                    ScrapperActions.CLICK_AND_SCRAPE_CONTENT,
-                ].includes(prevAction)
+                page.url() !== item.url ||
+                (prevAction &&
+                    ![
+                        ScrapperActions.CLICK_AND_CONTINUE,
+                        ScrapperActions.CLICK_AND_SCRAPE_CONTENT,
+                    ].includes(prevAction))
             ) {
                 await page.goto(item.url)
                 logger('log', `Navigated to ${item.url}`)
             }
-
-            // check if page hasn't loaded and wait for it
-            // if (
-            //     [
-            //         ScrapperActions.CLICK_AND_CONTINUE,
-            //         ScrapperActions.CLICK_AND_SCRAPE_CONTENT,
-            //     ].includes(prevAction)
-            // ) {
-            //     // TODO: check if page has loaded -
-            //     await new Promise((resolve) => setTimeout(resolve, 1000))
-            // }
 
             logger(
                 'log',
@@ -200,10 +190,8 @@ export const scrapeItems = async (
             }
             const data = await page.$$eval(
                 selector,
-                async (elements, args) => {
-                    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-
-                    const [action, ScrapperActions, valueToInput] = args
+                async (elements: HTMLElement[], args) => {
+                    const { action, ScrapperActions, valueToInput } = args
                     const collection = []
 
                     for (const element of elements) {
@@ -298,7 +286,7 @@ export const scrapeItems = async (
                     }
                     return collection
                 },
-                [action, ScrapperActions, valueToInput]
+                { action, ScrapperActions, valueToInput }
             )
 
             results.push({

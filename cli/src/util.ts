@@ -1,4 +1,4 @@
-import { ScrapperActions } from './globalTypes'
+import { ScrapperActions } from './globalTypes.js'
 
 export const parseJson = <T>(json: string): T => {
     try {
@@ -10,12 +10,13 @@ export const parseJson = <T>(json: string): T => {
 }
 
 export const getSelector = (
-    action: ScrapperActions,
+    action: ScrapperActions | null,
     selectors: {
         commonSelector: string
         uniqueSelector: string
     }
 ): string => {
+    if (!action) throw new Error('Action is null')
     switch (action) {
         case ScrapperActions.SCRAPE_CONTENT:
             return selectors.commonSelector

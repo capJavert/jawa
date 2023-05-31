@@ -1,4 +1,4 @@
-import { type CSSPath } from './globalTypes'
+import { type CSSPath } from './globalTypes.js'
 
 export interface CustomFieldResult {
     type: 'customField'

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/prefer-ts-expect-error */
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-floating-promises */
@@ -7,17 +8,16 @@ import * as puppeteer from 'puppeteer'
 import yargs, { type ArgumentsCamelCase } from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import { type CSSPath, ScrapperActions } from './globalTypes'
 import {
     scrapeItems,
     scrapeTableInPageAsJSON,
     scrapeTableInPageFromUrlAsHTML,
-} from './scrapper'
-import { type Item, type ScrapperResult } from './types'
-import { getSelector, parseJson } from './util'
+} from './scrapper.js'
+import { type Item, type ScrapperResult } from './types.js'
+import { parseJson } from './util.js'
 
 const scrape = async (
-    configPath,
+    configPath: string,
     options: {
         verbose: boolean
         quiet: boolean
@@ -26,7 +26,10 @@ const scrape = async (
     }
 ): Promise<void> => {
     let browser: puppeteer.Browser | null = null
-    const logger = (level: string, ...args: string[]): void => {
+    const logger = (
+        level: 'log' | 'warn' | 'error',
+        ...args: string[]
+    ): void => {
         if (!options.quiet) {
             console[level](...args)
         }
@@ -65,11 +68,6 @@ const scrape = async (
 
         logger('log', 'Scraping started')
 
-        // TODO: remove this
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        page.on('console', async (msg) => {
-            console.log(msg.text())
-        })
         const { items, customFields, pagination } = config
         const results: ScrapperResult[] = []
 
@@ -83,7 +81,7 @@ const scrape = async (
             }
             const firstUrl = items[0].url
             const paginatedUrls = [firstUrl]
-            for (let i = start; i < end; i++) {
+            for (let i = start; i < end + 1; i++) {
                 paginatedUrls.push(
                     paginationTemplate.replace(/{{page}}/g, i.toString())
                 )
@@ -165,9 +163,10 @@ interface Arguments {
     userAgent: string
     indentSize: number
 }
-/** @ts-expect-error */
+// @ts-ignore
 yargs(hideBin(process.argv))
     .command({
+        // @ts-ignore
         command: '$0 <configPath>',
         describe: 'scrape the URLs and data from JSON config',
         builder: (yargs) => {
