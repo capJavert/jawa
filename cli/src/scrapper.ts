@@ -25,20 +25,12 @@ export const scrapeItems = async (
     const avoidList: string[] = []
     for (let i = 0; i < items.length; i += 1) {
         const item = items[i]
-        const prevAction = items[i - 1]?.action ?? null
         const { selectors, node, url, action, label, valueToInput } = item
         if (avoidList.includes(url)) {
             continue
         }
         try {
-            if (
-                page.url() !== item.url ||
-                (prevAction &&
-                    ![
-                        ScrapperActions.CLICK_AND_CONTINUE,
-                        ScrapperActions.CLICK_AND_SCRAPE_CONTENT,
-                    ].includes(prevAction))
-            ) {
+            if (page.url() !== item.url) {
                 await page.goto(item.url)
                 logger('log', `Navigated to ${item.url}`)
             }
