@@ -106,7 +106,11 @@ const scrape = async (configPath, options) => {
 
         logger('log', 'Done!')
 
-        console.log(JSON.stringify(results, null, options.indentSize))
+        if (options.outputResults) {
+            console.log(JSON.stringify(results, null, options.indentSize))
+        }
+
+        return results
     } catch (error) {
         if (options.verbose) {
             console.error(error)
@@ -132,6 +136,7 @@ yargsInstance(hideBin(process.argv))
         },
         handler: argv => {
             scrape(argv.configPath, {
+                outputResults: true,
                 verbose: argv.verbose,
                 quiet: argv.quiet,
                 userAgent: argv.userAgent,
