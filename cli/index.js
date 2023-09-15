@@ -1,10 +1,15 @@
 #!/usr/bin/env node
-const puppeteer = require('puppeteer')
 const fs = require('fs').promises
 const yargsInstance = require('yargs')
 const { hideBin } = require('yargs/helpers')
 
 const scrape = async (configPath, options) => {
+    const puppeteer = options.puppeteer || require('puppeteer')
+
+    if (typeof puppeteer.launch !== 'function') {
+        throw new Error('Invalid puppeteer module')
+    }
+
     let browser
 
     const logger = (level, ...args) => {
