@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 const puppeteer = require('puppeteer')
-const { options } = require('yargs')
 const fs = require('fs').promises
 const yargsInstance = require('yargs')
 const { hideBin } = require('yargs/helpers')
@@ -160,3 +159,7 @@ yargsInstance(hideBin(process.argv))
         default: 4
     })
     .parse()
+
+module.exports = {
+    scrape
+}
