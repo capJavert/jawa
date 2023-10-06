@@ -3,7 +3,7 @@ const fs = require('fs').promises
 const yargsInstance = require('yargs')
 const { hideBin } = require('yargs/helpers')
 
-const scrape = async (configPath, options) => {
+const scrape = async (config, options) => {
     const puppeteer = options.puppeteer || require('puppeteer')
 
     if (typeof puppeteer.launch !== 'function') {
@@ -19,9 +19,6 @@ const scrape = async (configPath, options) => {
     }
 
     try {
-        const jsonData = (await fs.readFile(configPath)).toString()
-        const config = JSON.parse(jsonData)
-
         logger('log', 'Loaded config')
 
         logger('log', 'Starting headless browser')
@@ -134,8 +131,11 @@ yargsInstance(hideBin(process.argv))
                     'path to JSON config file, use visual scraper on https://jawa.kickass.codes or create it yourself'
             })
         },
-        handler: argv => {
-            scrape(argv.configPath, {
+        handler: async argv => {
+            const configData = (await fs.readFile(argv.configPath)).toString()
+            const config = JSON.parse(configData)
+
+            await scrape(config, {
                 outputResults: true,
                 verbose: argv.verbose,
                 quiet: argv.quiet,
