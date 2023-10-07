@@ -7,9 +7,9 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "bin": {
-        "jawa": "./index.js",
-        "vscraper-cli": "./index.js",
-        "vscraper": "./index.js"
+        "jawa": "./bin.js",
+        "vscraper-cli": "./bin.js",
+        "vscraper": "./bin.js"
     },
     "repository": {
         "type": "git",
