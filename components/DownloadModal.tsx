@@ -125,18 +125,39 @@ const DownloadModal = ({
                     installed.
                 </Typography>
 
-                <Button
-                    color="info"
-                    size="lg"
+                <Box
                     sx={{
-                        marginBottom: 2,
-                        marginRight: 2
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: 2
                     }}
-                    title="Download config"
-                    onClick={onSubmit}
                 >
-                    Download config
-                </Button>
+                    <Button
+                        color="info"
+                        size="lg"
+                        sx={{
+                            marginRight: 2
+                        }}
+                        title="Download config"
+                        onClick={onSubmit}
+                    >
+                        Download config
+                    </Button>
+
+                    <Badge badgeContent="BETA" color="warning">
+                        <Button
+                            color="info"
+                            size="lg"
+                            title="Download config"
+                            onClick={() => {
+                                // TODO
+                            }}
+                        >
+                            Run in Cloud
+                        </Button>
+                    </Badge>
+                </Box>
 
                 <Typography
                     level="body1"
