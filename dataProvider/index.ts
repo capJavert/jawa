@@ -1,12 +1,15 @@
 import { TScraperConfig } from '../types'
 
 export const getConfigResults = async ({
-    config
+    config,
+    verificationToken
 }: {
     config: Omit<TScraperConfig, 'url'>
+    verificationToken: string
 }): Promise<Record<string, unknown>> => {
     const headers = new Headers()
     headers.append('Content-Type', 'application/json')
+    headers.append('x-vfy-str', verificationToken)
 
     const options: RequestInit = {
         method: 'POST',

@@ -33,6 +33,7 @@ import DownloadModal from '../components/DownloadModal'
 import Layout from '../components/Layout'
 import { getConfigResults } from '../dataProvider'
 import { EScraperMessageType, TScraperConfig, TScraperMessage, TScraperSelector } from '../types'
+import { getReCaptchaToken, waitForReCaptcha } from '../utils'
 
 const urlRegex =
     /^https:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,63}\.[a-zA-Z0-9()]{1,63}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/
@@ -315,10 +316,13 @@ const Home: NextPage = () => {
                         setDownloadPending(false)
                     }}
                     onRun={handleSubmit(async values => {
+                        const reCaptchaToken = await getReCaptchaToken()
+
                         const result = await getConfigResults({
                             config: {
                                 items: values.items
-                            }
+                            },
+                            verificationToken: reCaptchaToken
                         })
 
                         const resultJSON = JSON.stringify(result)

@@ -10,6 +10,7 @@ import Typography from '@mui/joy/Typography'
 import { GlobalStyles } from '@mui/system'
 import type { AppProps } from 'next/app'
 import Link from 'next/link'
+import Script from 'next/script'
 import { DefaultSeo } from 'next-seo'
 
 import ColorSchemeToggle from '../components/ColorScheemToggle'
@@ -104,7 +105,44 @@ const App = ({ Component, pageProps }: AppProps) => {
                     </Layout.Header>
                     <Component {...pageProps} />
                 </Layout.Container>
+                <Box
+                    sx={{
+                        display: {
+                            xs: 'none',
+                            md: 'block'
+                        }
+                    }}
+                >
+                    <Typography
+                        sx={{
+                            py: 0.5,
+                            textAlign: 'center',
+                            '& a': {
+                                textDecoration: 'underline'
+                            }
+                        }}
+                        level="body4"
+                    >
+                        This site is protected by reCAPTCHA and the Google{' '}
+                        <a
+                            href="https://policies.google.com/privacy"
+                            target="_blank"
+                            rel="nofollow noreferrer noopener"
+                        >
+                            Privacy Policy
+                        </a>{' '}
+                        and{' '}
+                        <a href="https://policies.google.com/terms" target="_blank" rel="nofollow noreferrer noopener">
+                            Terms of Service
+                        </a>{' '}
+                        apply.
+                    </Typography>
+                </Box>
             </CssVarsProvider>
+            <Script
+                src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_KEY}`}
+                strategy="afterInteractive"
+            />
         </>
     )
 }
