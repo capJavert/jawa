@@ -26,11 +26,12 @@ import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Controller, useController, useFieldArray, useForm } from 'react-hook-form'
-import { z } from 'zod'
+import { unknown, z } from 'zod'
 
 import Browser from '../components/Browser'
 import DownloadModal from '../components/DownloadModal'
 import Layout from '../components/Layout'
+import { getConfigResults } from '../dataProvider'
 import { EScraperMessageType, TScraperConfig, TScraperMessage, TScraperSelector } from '../types'
 
 const urlRegex =
@@ -65,6 +66,37 @@ const getPortalContainer = (() => () => {
 
     return container
 })()
+
+const promptFileDownload = ({
+    fileName,
+    content,
+    type = 'application/json'
+}: {
+    fileName: string
+    content: BlobPart
+    type?: string
+}) => {
+    const aElement = document.createElement('a')
+    aElement.setAttribute('download', fileName)
+    const href = URL.createObjectURL(
+        new Blob([content], {
+            type
+        })
+    )
+    aElement.href = href
+    aElement.setAttribute('target', '_blank')
+    aElement.click()
+    URL.revokeObjectURL(href)
+}
+
+const getShortHash = ({ payload }: { payload: unknown }): string => {
+    const sha1Instance = sha1.create()
+    sha1Instance.update(JSON.stringify(payload))
+    const hash = sha1Instance.hex() as string
+    const shortHash = hash.substring(0, 10)
+
+    return shortHash
+}
 
 const Home: NextPage = () => {
     const router = useRouter()
@@ -272,28 +304,31 @@ const Home: NextPage = () => {
                 <DownloadModal
                     download={downloadPending}
                     onSubmit={handleSubmit(values => {
-                        const aElement = document.createElement('a')
-                        aElement.setAttribute('download', `vscraper-config-${downloadPending}.json`)
-                        const href = URL.createObjectURL(
-                            new Blob(
-                                [
-                                    JSON.stringify({
-                                        items: values.items
-                                    })
-                                ],
-                                {
-                                    type: 'application/json'
-                                }
-                            )
-                        )
-                        aElement.href = href
-                        aElement.setAttribute('target', '_blank')
-                        aElement.click()
-                        URL.revokeObjectURL(href)
+                        promptFileDownload({
+                            fileName: `vscraper-config-${downloadPending}.json`,
+                            content: JSON.stringify({
+                                items: values.items
+                            })
+                        })
                     })}
                     onClose={() => {
                         setDownloadPending(false)
                     }}
+                    onRun={handleSubmit(async values => {
+                        const result = await getConfigResults({
+                            config: {
+                                items: values.items
+                            }
+                        })
+
+                        const resultJSON = JSON.stringify(result)
+                        const resultHash = getShortHash({ payload: resultJSON })
+
+                        promptFileDownload({
+                            fileName: `vscraper-results-${resultHash}.json`,
+                            content: resultJSON
+                        })
+                    })}
                 />
             )}
             <form
@@ -325,12 +360,9 @@ const Home: NextPage = () => {
                             disabled={fields.length === 0 || !formState.isValid}
                             title="Run it"
                             onClick={handleSubmit(data => {
-                                const sha1Instance = sha1.create()
-                                sha1Instance.update(JSON.stringify(data))
-                                const hash = sha1Instance.hex() as string
-                                const shortHash = hash.substring(0, 10)
+                                const downloadHash = getShortHash({ payload: JSON.stringify(data) })
 
-                                setDownloadPending(shortHash)
+                                setDownloadPending(downloadHash)
                             })}
                         >
                             Run&nbsp;it
