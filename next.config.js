@@ -29,6 +29,14 @@ const nextConfig = {
                 headers: securityHeaders
             }
         ]
+    },
+    rewrites: async () => {
+        return [
+            {
+                source: '/cloud/runners/beta',
+                destination: process.env.CLOUD_RUNNER_BETA_URL
+            }
+        ]
     }
 }
 

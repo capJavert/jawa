@@ -1,4 +1,5 @@
 import SendAndArchiveIcon from '@mui/icons-material/SendAndArchive'
+import Badge from '@mui/joy/Badge'
 import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
 import Modal from '@mui/joy/Modal'
@@ -9,17 +10,21 @@ import Typography from '@mui/joy/Typography'
 import Link from 'next/link'
 // @ts-ignore
 import * as platformDetect from 'platform-detect'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 const DownloadModal = ({
     download,
     onClose,
-    onSubmit
+    onSubmit,
+    onRun
 }: {
     download: string | false
     onClose: (event: {}, reason: 'backdropClick' | 'escapeKeyDown' | 'closeClick') => void
     onSubmit: () => void
+    onRun: () => Promise<void>
 }) => {
+    const [isRunning, setRunning] = useState(false)
+
     const downloadFolder = useMemo(() => {
         if (typeof window === 'undefined') {
             return ''
@@ -97,23 +102,80 @@ const DownloadModal = ({
                 <Typography
                     level="body1"
                     sx={{
-                        marginBottom: 1
-                    }}
-                >
-                    Your config is ready, you can download it and then run it through our{' '}
-                    <Typography level="body1" component="strong" color="info">
-                        jawa
-                    </Typography>{' '}
-                    CLI (command line tool).
-                </Typography>
-
-                <Typography
-                    level="body1"
-                    sx={{
                         marginBottom: 3
                     }}
                 >
-                    Only requirement is that you have{' '}
+                    Your config is ready, you can run it yourself through our{' '}
+                    <Typography level="body1" component="strong" color="info">
+                        jawa
+                    </Typography>{' '}
+                    CLI (command line tool) or in the{' '}
+                    <Typography component="strong" color="warning">
+                        Cloud
+                    </Typography>
+                    .
+                </Typography>
+
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: 3
+                    }}
+                >
+                    <Button
+                        color="info"
+                        size="lg"
+                        sx={{
+                            marginRight: 2
+                        }}
+                        title="Download config"
+                        onClick={onSubmit}
+                    >
+                        Download config
+                    </Button>
+
+                    <Typography
+                        level="body1"
+                        sx={{
+                            marginRight: 2
+                        }}
+                    >
+                        or
+                    </Typography>
+
+                    <Badge badgeContent="BETA" color="warning">
+                        <Button
+                            color="info"
+                            size="lg"
+                            title="Download config"
+                            onClick={async () => {
+                                try {
+                                    setRunning(true)
+
+                                    await onRun()
+                                } catch (error) {
+                                    console.error(error)
+                                } finally {
+                                    setRunning(false)
+                                }
+                            }}
+                            loading={isRunning}
+                            loadingPosition="start"
+                        >
+                            {isRunning ? 'Running...' : 'Run in Cloud'}
+                        </Button>
+                    </Badge>
+                </Box>
+
+                <Typography
+                    level="body2"
+                    sx={{
+                        marginBottom: 2
+                    }}
+                >
+                    You can run config locally with command below after download, only requirement is that you have{' '}
                     <Link href="https://docs.npmjs.com/downloading-and-installing-node-js-and-npm">
                         <a target="_blank">
                             <Typography color="primary" component="u">
@@ -122,27 +184,6 @@ const DownloadModal = ({
                         </a>
                     </Link>{' '}
                     installed.
-                </Typography>
-
-                <Button
-                    color="info"
-                    size="lg"
-                    sx={{
-                        marginBottom: 2
-                    }}
-                    title="Download config"
-                    onClick={onSubmit}
-                >
-                    Download config
-                </Button>
-
-                <Typography
-                    level="body1"
-                    sx={{
-                        marginBottom: 2
-                    }}
-                >
-                    and then run it
                 </Typography>
 
                 <TextField
