@@ -1,4 +1,5 @@
 import SendAndArchiveIcon from '@mui/icons-material/SendAndArchive'
+import Badge from '@mui/joy/Badge'
 import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
 import Modal from '@mui/joy/Modal'
@@ -128,7 +129,8 @@ const DownloadModal = ({
                     color="info"
                     size="lg"
                     sx={{
-                        marginBottom: 2
+                        marginBottom: 2,
+                        marginRight: 2
                     }}
                     title="Download config"
                     onClick={onSubmit}
