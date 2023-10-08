@@ -177,7 +177,7 @@ const DownloadModal = ({
                 >
                     You can run config locally with command below after download, only requirement is that you have{' '}
                     <Link href="https://docs.npmjs.com/downloading-and-installing-node-js-and-npm">
-                        <a target="_blank">
+                        <a target="_blank" rel="nofollow noreferrer noopener">
                             <Typography color="primary" component="u">
                                 npm
                             </Typography>
