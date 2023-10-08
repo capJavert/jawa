@@ -164,7 +164,7 @@ const DownloadModal = ({
                             loading={isRunning}
                             loadingPosition="start"
                         >
-                            Run in Cloud
+                            {isRunning ? 'Running...' : 'Run in Cloud'}
                         </Button>
                     </Badge>
                 </Box>
