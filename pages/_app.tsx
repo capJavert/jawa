@@ -116,10 +116,7 @@ const App = ({ Component, pageProps }: AppProps) => {
                     <Typography
                         sx={{
                             py: 0.5,
-                            textAlign: 'center',
-                            '& a': {
-                                textDecoration: 'underline'
-                            }
+                            textAlign: 'center'
                         }}
                         level="body4"
                     >
