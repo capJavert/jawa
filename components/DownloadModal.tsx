@@ -2,10 +2,11 @@ import SendAndArchiveIcon from '@mui/icons-material/SendAndArchive'
 import Badge from '@mui/joy/Badge'
 import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
+import FormControl from '@mui/joy/FormControl'
+import Input from '@mui/joy/Input'
 import Modal from '@mui/joy/Modal'
 import ModalClose from '@mui/joy/ModalClose'
 import ModalDialog from '@mui/joy/ModalDialog'
-import TextField from '@mui/joy/TextField'
 import Typography from '@mui/joy/Typography'
 import Link from 'next/link'
 // @ts-ignore
@@ -60,13 +61,9 @@ const DownloadModal = ({
             open={!!download}
             onClose={onClose}
             sx={{
-                borderRadius: 0
-            }}
-            componentsProps={{
-                backdrop: {
-                    sx: {
-                        backdropFilter: 'blur(3px)'
-                    }
+                borderRadius: 0,
+                '& .MuiModal-backdrop': {
+                    backdropFilter: 'blur(3px)'
                 }
             }}
         >
@@ -176,78 +173,79 @@ const DownloadModal = ({
                     }}
                 >
                     You can run config locally with command below after download, only requirement is that you have{' '}
-                    <Link href="https://docs.npmjs.com/downloading-and-installing-node-js-and-npm">
-                        <a target="_blank" rel="nofollow noreferrer noopener">
-                            <Typography color="primary" component="u">
-                                npm
-                            </Typography>
-                        </a>
+                    <Link
+                        href="https://docs.npmjs.com/downloading-and-installing-node-js-and-npm"
+                        target="_blank"
+                        rel="nofollow noreferrer noopener"
+                    >
+                        <Typography color="primary" component="u">
+                            npm
+                        </Typography>
                     </Link>{' '}
                     installed.
                 </Typography>
 
-                <TextField
+                <FormControl
+                    color="info"
                     sx={theme => ({
                         marginBottom: 2,
                         '& .JoyInput-root.Joy-focused:before': {
-                            boxShadow: 'none'
+                            boxShadow: 'none !important'
                         },
                         [theme.getColorSchemeSelector('dark')]: {
-                            '& .JoyInput-root:hover': {
+                            '& .MuiInput-root:hover': {
                                 borderColor: 'var(--joy-palette-info-700) !important'
                             }
                         },
                         [theme.getColorSchemeSelector('light')]: {
-                            '& .JoyInput-root:hover:not(.Joy-focused)': {
+                            '& .MuiInput-root:hover': {
                                 borderColor: 'var(--joy-palette-info-outlinedBorder) !important'
                             }
                         }
                     })}
-                    componentsProps={{
-                        input: {
-                            readOnly: true
+                >
+                    <Input
+                        readOnly
+                        variant="outlined"
+                        value={codeRunSnippet}
+                        startDecorator={
+                            <Typography color="info" level="inherit">
+                                {shellSign}
+                            </Typography>
                         }
-                    }}
-                    variant="outlined"
-                    color="info"
-                    value={codeRunSnippet}
-                    startDecorator={
-                        <Typography color="info" level="inherit">
-                            {shellSign}
-                        </Typography>
-                    }
-                    endDecorator={
-                        <Button
-                            id="copy-command-button"
-                            variant="plain"
-                            color="neutral"
-                            title="Copy"
-                            onClick={() => {
-                                navigator.clipboard
-                                    .writeText(codeRunSnippet)
-                                    .then(() => {
-                                        const element = document.getElementById('copy-command-button')
+                        endDecorator={
+                            <Button
+                                id="copy-command-button"
+                                variant="plain"
+                                color="neutral"
+                                title="Copy"
+                                onClick={() => {
+                                    navigator.clipboard
+                                        .writeText(codeRunSnippet)
+                                        .then(() => {
+                                            const element = document.getElementById('copy-command-button')
 
-                                        if (element) {
-                                            const newInnerText = 'Copied'
+                                            if (element) {
+                                                const newInnerText = 'Copied'
 
-                                            if (element.innerText !== newInnerText) {
-                                                let originalInnerText = element.innerText
-                                                element.innerText = newInnerText
+                                                if (element.innerText !== newInnerText) {
+                                                    let originalInnerText = element.innerText
+                                                    element.innerText = newInnerText
 
-                                                setTimeout(() => {
-                                                    element.innerText = originalInnerText
-                                                }, 1000)
+                                                    setTimeout(() => {
+                                                        element.innerText = originalInnerText
+                                                    }, 1000)
+                                                }
                                             }
-                                        }
-                                    })
-                                    .catch(console.error)
-                            }}
-                        >
-                            Copy
-                        </Button>
-                    }
-                />
+                                        })
+                                        .catch(console.error)
+                                }}
+                            >
+                                Copy
+                            </Button>
+                        }
+                    />
+                </FormControl>
 
                 <Typography level="body2" component="em">
                     Note: adjust the path to the config file in your terminal depending on your download folder location

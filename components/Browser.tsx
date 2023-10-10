@@ -106,7 +106,7 @@ const Browser = ({ url, enabled = true, onLoad }: { url: string; enabled: boolea
                     to scrape them.
                 </Typography>
 
-                <Link href={downloadLink} passHref>
+                <Link href={downloadLink} passHref legacyBehavior>
                     <Button
                         title={`Add to ${browserName}`}
                         onClick={() => {

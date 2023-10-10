@@ -12,12 +12,13 @@ import Alert from '@mui/joy/Alert'
 import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
 import CircularProgress from '@mui/joy/CircularProgress'
+import FormControl from '@mui/joy/FormControl'
 import IconButton from '@mui/joy/IconButton'
+import Input from '@mui/joy/Input'
 import List from '@mui/joy/List'
 import ListItem from '@mui/joy/ListItem'
 import ListItemDecorator from '@mui/joy/ListItemDecorator'
 import Sheet from '@mui/joy/Sheet'
-import TextField from '@mui/joy/TextField'
 import Typography from '@mui/joy/Typography'
 import useMediaQuery from '@mui/material/useMediaQuery'
 // @ts-ignore
@@ -26,7 +27,7 @@ import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Controller, useController, useFieldArray, useForm } from 'react-hook-form'
-import { unknown, z } from 'zod'
+import { z } from 'zod'
 
 import Browser from '../components/Browser'
 import DownloadModal from '../components/DownloadModal'
@@ -38,17 +39,20 @@ import { getReCaptchaToken, waitForReCaptcha } from '../utils'
 const urlRegex =
     /^https:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,63}\.[a-zA-Z0-9()]{1,63}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/
 const httpRegex = /https?/
-const urlSchema = z.preprocess(value => {
-    if (!value || typeof value !== 'string') {
-        return ''
-    }
+const urlSchema = z.preprocess(
+    value => {
+        if (!value || typeof value !== 'string') {
+            return ''
+        }
 
-    if (!httpRegex.test(value)) {
-        return `https://${value}`
-    }
+        if (!httpRegex.test(value)) {
+            return `https://${value}`
+        }
 
-    return value
-}, z.string().regex(urlRegex, { message: 'Invalid URL' }).min(1, { message: 'Required' }))
+        return value
+    },
+    z.string().regex(urlRegex, { message: 'Invalid URL' }).min(1, { message: 'Required' })
+)
 const selectorItemSchema = z.object({
     url: urlSchema,
     selector: z.string().min(1, { message: 'Required' })
@@ -379,15 +383,8 @@ const Home: NextPage = () => {
                             defaultValue=""
                             render={({ field, fieldState }) => {
                                 return (
-                                    <TextField
-                                        error={!!fieldState.error}
+                                    <FormControl
                                         size="sm"
-                                        autoFocus={process.env.NODE_ENV === 'production'}
-                                        placeholder="Type a URL"
-                                        startDecorator={<SearchRoundedIcon color="primary" />}
-                                        value={field.value}
-                                        onChange={field.onChange}
-                                        onBlur={field.onBlur}
                                         sx={{
                                             flexBasis: '500px',
                                             display: {
@@ -395,7 +392,17 @@ const Home: NextPage = () => {
                                                 sm: 'flex'
                                             }
                                         }}
-                                    />
+                                    >
+                                        <Input
+                                            error={!!fieldState.error}
+                                            autoFocus={process.env.NODE_ENV === 'production'}
+                                            placeholder="Type a URL"
+                                            startDecorator={<SearchRoundedIcon color="primary" />}
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            onBlur={field.onBlur}
+                                        />
+                                    </FormControl>
                                 )
                             }}
                         />
@@ -439,50 +446,51 @@ const Home: NextPage = () => {
                                         control={control}
                                         render={({ field, fieldState }) => {
                                             return (
-                                                <TextField
-                                                    error={!!fieldState.error}
-                                                    size="sm"
-                                                    name={`items.${index}.selector`}
-                                                    placeholder="Selector"
-                                                    endDecorator={
-                                                        <>
-                                                            <IconButton
-                                                                variant="plain"
-                                                                color="neutral"
-                                                                title="Edit item"
-                                                                onClick={() => {
-                                                                    const element =
-                                                                        document.querySelector<HTMLInputElement>(
-                                                                            `input[name="items.${index}.selector"]`
-                                                                        )
+                                                <FormControl size="sm">
+                                                    <Input
+                                                        error={!!fieldState.error}
+                                                        name={`items.${index}.selector`}
+                                                        placeholder="Selector"
+                                                        endDecorator={
+                                                            <>
+                                                                <IconButton
+                                                                    variant="plain"
+                                                                    color="neutral"
+                                                                    title="Edit item"
+                                                                    onClick={() => {
+                                                                        const element =
+                                                                            document.querySelector<HTMLInputElement>(
+                                                                                `input[name="items.${index}.selector"]`
+                                                                            )
 
-                                                                    if (element) {
-                                                                        element.focus()
-                                                                    }
-                                                                }}
-                                                            >
-                                                                <EditIcon />
-                                                            </IconButton>
-                                                            <IconButton
-                                                                sx={{
-                                                                    marginLeft: 2
-                                                                }}
-                                                                variant="plain"
-                                                                color="neutral"
-                                                                title="Remove item"
-                                                                onClick={() => {
-                                                                    selectorsField.remove(index)
-                                                                }}
-                                                            >
-                                                                <DeleteForeverIcon />
-                                                            </IconButton>
-                                                        </>
-                                                    }
-                                                    variant="soft"
-                                                    value={field.value}
-                                                    onChange={field.onChange}
-                                                    onBlur={field.onBlur}
-                                                />
+                                                                        if (element) {
+                                                                            element.focus()
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <EditIcon />
+                                                                </IconButton>
+                                                                <IconButton
+                                                                    sx={{
+                                                                        marginLeft: 2
+                                                                    }}
+                                                                    variant="plain"
+                                                                    color="neutral"
+                                                                    title="Remove item"
+                                                                    onClick={() => {
+                                                                        selectorsField.remove(index)
+                                                                    }}
+                                                                >
+                                                                    <DeleteForeverIcon />
+                                                                </IconButton>
+                                                            </>
+                                                        }
+                                                        variant="soft"
+                                                        value={field.value}
+                                                        onChange={field.onChange}
+                                                        onBlur={field.onBlur}
+                                                    />
+                                                </FormControl>
                                             )
                                         }}
                                     />
