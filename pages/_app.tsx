@@ -76,27 +76,13 @@ const App = ({ Component, pageProps }: AppProps) => {
                             }}
                         />
                         <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.5 }}>
-                            <Link href="https://github.com/sponsors/capJavert" passHref>
-                                <IconButton
-                                    component="a"
-                                    size="sm"
-                                    color="primary"
-                                    variant="outlined"
-                                    title="Buy Me a Beer"
-                                    target="_blank"
-                                >
+                            <Link href="https://github.com/sponsors/capJavert" title="Buy Me a Beer" target="_blank">
+                                <IconButton size="sm" color="primary" variant="outlined">
                                     <SportsBarIcon />
                                 </IconButton>
                             </Link>
-                            <Link href="https://github.com/capJavert/jawa" passHref>
-                                <IconButton
-                                    component="a"
-                                    size="sm"
-                                    color="primary"
-                                    variant="outlined"
-                                    title="GitHub"
-                                    target="_blank"
-                                >
+                            <Link href="https://github.com/capJavert/jawa" title="GitHub" target="_blank">
+                                <IconButton size="sm" color="primary" variant="outlined">
                                     <GitHubIcon />
                                 </IconButton>
                             </Link>
