@@ -218,7 +218,9 @@ const Home: NextPage = () => {
 
                             await new Promise(resolve => {
                                 port.onDisconnect.addListener(() => {
-                                    setExtensionPort(null)
+                                    if (browser.runtime.lastError) {
+                                        setExtensionPort(null)
+                                    }
 
                                     resolve(true)
                                 })
