@@ -189,7 +189,7 @@ const DownloadModal = ({
                     color="info"
                     sx={theme => ({
                         marginBottom: 2,
-                        '& .JoyInput-root.Joy-focused:before': {
+                        '& .MuiInput-root.Joy-focused:before': {
                             boxShadow: 'none !important'
                         },
                         [theme.getColorSchemeSelector('dark')]: {
