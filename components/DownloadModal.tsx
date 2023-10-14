@@ -184,6 +184,9 @@ const DownloadModal = ({
                         '& .MuiInput-root.Joy-focused:before': {
                             boxShadow: 'none !important'
                         },
+                        '& .MuiInput-root:focus-within:before': {
+                            boxShadow: 'none !important'
+                        },
                         [theme.getColorSchemeSelector('dark')]: {
                             '& .MuiInput-root:hover': {
                                 borderColor: 'var(--joy-palette-info-700) !important'
