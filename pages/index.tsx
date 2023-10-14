@@ -36,43 +36,15 @@ import DownloadModal from '../components/DownloadModal'
 import Layout from '../components/Layout'
 import { getConfigResults } from '../dataProvider'
 import { EScraperMessageType, TScraperConfig, TScraperMessage, TScraperSelector } from '../types'
-import { getReCaptchaToken, getShortHash, promptFileDownload, waitForReCaptcha } from '../utils'
-
-const urlRegex =
-    /^https:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,63}\.[a-zA-Z0-9()]{1,63}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/
-const httpRegex = /https?/
-const urlSchema = z.preprocess(
-    value => {
-        if (!value || typeof value !== 'string') {
-            return ''
-        }
-
-        if (!httpRegex.test(value)) {
-            return `https://${value}`
-        }
-
-        return value
-    },
-    z.string().regex(urlRegex, { message: 'Invalid URL' }).min(1, { message: 'Required' })
-)
-const selectorItemSchema = z.object({
-    url: urlSchema,
-    selector: z.string().min(1, { message: 'Required' })
-})
-const schema = z.object({
-    url: urlSchema,
-    items: z.array(selectorItemSchema)
-})
-
-const getPortalContainer = (() => () => {
-    let container
-
-    if (!container) {
-        container = document.getElementById('header-top-bar')
-    }
-
-    return container
-})()
+import {
+    getPortalContainer,
+    getReCaptchaToken,
+    getShortHash,
+    promptFileDownload,
+    schema,
+    selectorItemSchema,
+    urlSchema
+} from '../utils'
 
 const Home: NextPage = () => {
     const router = useRouter()

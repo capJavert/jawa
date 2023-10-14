@@ -40,27 +40,28 @@ const App = ({ Component, pageProps }: AppProps) => {
                 />
                 <Layout.Container>
                     <Layout.Header>
-                        <Box
-                            sx={theme => ({
-                                display: 'flex',
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                gap: 1.5,
-                                color: 'black',
-                                [theme.getColorSchemeSelector('light')]: {
-                                    color: 'black'
-                                },
-                                [theme.getColorSchemeSelector('dark')]: {
-                                    color: 'white'
-                                }
-                            })}
-                        >
-                            <JawaIcon width={30} height={30} />
-
-                            <Typography component="h1" fontWeight="xl">
-                                Jawa <Typography level="body3">Visual&nbsp;Scraper</Typography>
-                            </Typography>
-                        </Box>
+                        <Link href="/">
+                            <Box
+                                sx={theme => ({
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    gap: 1.5,
+                                    color: 'black',
+                                    [theme.getColorSchemeSelector('light')]: {
+                                        color: 'black'
+                                    },
+                                    [theme.getColorSchemeSelector('dark')]: {
+                                        color: 'white'
+                                    }
+                                })}
+                            >
+                                <JawaIcon width={30} height={30} />
+                                <Typography component="h1" fontWeight="xl">
+                                    Jawa <Typography level="body3">Visual&nbsp;Scraper</Typography>
+                                </Typography>
+                            </Box>
+                        </Link>
                         <Box
                             id="header-top-bar"
                             sx={{
