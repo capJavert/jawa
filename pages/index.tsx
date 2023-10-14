@@ -278,7 +278,7 @@ const Home: NextPage = () => {
 
     return (
         <>
-            {!isMobile && (
+            {!isMobile && !!downloadPending && (
                 <DownloadModal
                     download={downloadPending}
                     onSubmit={handleSubmit(values => {
