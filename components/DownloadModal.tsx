@@ -12,7 +12,6 @@ import {
     Button,
     ColorPaletteProp,
     FormControl,
-    IconButton,
     Input,
     LinearProgress,
     Link as MuiLink,
@@ -80,7 +79,7 @@ const DownloadModal = ({
         }
 
         if (hasError) {
-            if (result.message === EScraperErrorMessage.timeout) {
+            if (result.message === EScraperErrorMessage.timeout || result.message === EScraperErrorMessage.rateLimit) {
                 return 'neutral'
             }
 
@@ -118,6 +117,26 @@ const DownloadModal = ({
                     <Typography level="body2">
                         Page scraping failed due to timeout. During Beta period we have a limit of 10 seconds for
                         execution duration. If you need more time or wish to support the project{' '}
+                        <Link target="_blank" href={process.env.NEXT_PUBLIC_CONTACT_HREF as string}>
+                            <Typography color="primary" component="u">
+                                contact us
+                            </Typography>
+                        </Link>{' '}
+                        or{' '}
+                        <Link target="_blank" href={process.env.NEXT_PUBLIC_SPONSOR_HREF as string}>
+                            <Typography color="primary" component="u">
+                                sponsor with Jawa Pro
+                            </Typography>
+                        </Link>
+                    </Typography>
+                )
+            }
+
+            if (result.message === EScraperErrorMessage.rateLimit) {
+                return (
+                    <Typography level="body2">
+                        Page scraping failed due to rate limit. During Beta period we have a limited amount of scrapers
+                        available. If you need more scrapers or wish to support the project{' '}
                         <Link target="_blank" href={process.env.NEXT_PUBLIC_CONTACT_HREF as string}>
                             <Typography color="primary" component="u">
                                 contact us

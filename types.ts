@@ -20,5 +20,6 @@ export type TScraperMessage<Payload = Record<string, any>> = {
 
 export enum EScraperErrorMessage {
     timeout = 'jawa-error-timeout',
-    generic = 'jawa-error'
+    generic = 'jawa-error',
+    rateLimit = 'jawa-error-rate-limit'
 }

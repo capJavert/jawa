@@ -27,6 +27,8 @@ export const getConfigResults = async ({
     if (!response.ok) {
         if (response.status === 504) {
             throw new Error(EScraperErrorMessage.timeout)
+        } else if (response.status === 429) {
+            throw new Error(EScraperErrorMessage.rateLimit)
         } else {
             throw new Error(EScraperErrorMessage.generic)
         }
