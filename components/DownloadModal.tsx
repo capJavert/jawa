@@ -1,7 +1,7 @@
 import {
     Check as CheckIcon,
-    Close as CloseIcon,
     Error as ErrorIcon,
+    HourglassBottom as HourglassBottomIcon,
     SendAndArchive as SendAndArchiveIcon
 } from '@mui/icons-material'
 import {
@@ -10,6 +10,7 @@ import {
     Badge,
     Box,
     Button,
+    ColorPaletteProp,
     FormControl,
     IconButton,
     Input,
@@ -73,7 +74,11 @@ const DownloadModal = ({
     }, [])
     const codeRunSnippet = `npx jawa ${downloadFolder}vscraper-config-${download}.json`
 
-    const alertColor = useMemo(() => {
+    const alertColor = useMemo<ColorPaletteProp>(() => {
+        if (isRunning) {
+            return 'primary'
+        }
+
         if (hasError) {
             if (result.message === EScraperErrorMessage.timeout) {
                 return 'neutral'
@@ -83,9 +88,30 @@ const DownloadModal = ({
         }
 
         return 'success'
-    }, [result, hasError])
+    }, [result, hasError, isRunning])
+
+    const AlertIcon = useMemo(() => {
+        if (isRunning) {
+            return HourglassBottomIcon
+        }
+
+        if (hasError) {
+            return ErrorIcon
+        }
+
+        return CheckIcon
+    }, [hasError, isRunning])
 
     const alertContent = useMemo(() => {
+        if (isRunning) {
+            return (
+                <Typography level="body2">
+                    Running the scraper in the Cloud, this can take some time. Please leave this page open (or in
+                    background)...
+                </Typography>
+            )
+        }
+
         if (hasError) {
             if (result.message === EScraperErrorMessage.timeout) {
                 return (
@@ -133,7 +159,7 @@ const DownloadModal = ({
                 </MuiLink>
             </Typography>
         )
-    }, [result, hasError])
+    }, [result, hasError, isRunning])
 
     return (
         <Modal
@@ -248,7 +274,7 @@ const DownloadModal = ({
                     </Badge>
                 </Box>
 
-                {result && !isRunning && (
+                {(result || isRunning) && (
                     <Alert
                         sx={{ alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginBottom: 2 }}
                         size="lg"
@@ -265,11 +291,27 @@ const DownloadModal = ({
                                     boxShadow: '0 2px 12px 0 rgb(0 0 0/0.2)'
                                 }}
                             >
-                                <div>{hasError ? <ErrorIcon fontSize="small" /> : <CheckIcon fontSize="small" />}</div>
+                                <div>
+                                    <AlertIcon fontSize="small" />
+                                </div>
                             </AspectRatio>
                         }
                     >
                         <Box>{alertContent}</Box>
+                        {isRunning && (
+                            <LinearProgress
+                                variant="soft"
+                                value={40}
+                                sx={theme => ({
+                                    position: 'absolute',
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    color: `rgb(${theme.vars.palette.success.lightChannel} / 0.72)`,
+                                    '--LinearProgress-radius': '0px'
+                                })}
+                            />
+                        )}
                     </Alert>
                 )}
 
