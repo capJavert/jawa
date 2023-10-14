@@ -1,9 +1,32 @@
-import { SendAndArchive as SendAndArchiveIcon } from '@mui/icons-material'
-import { Badge, Box, Button, FormControl, Input, Modal, ModalClose, ModalDialog, Typography } from '@mui/joy'
+import {
+    Check as CheckIcon,
+    Close as CloseIcon,
+    Error as ErrorIcon,
+    SendAndArchive as SendAndArchiveIcon
+} from '@mui/icons-material'
+import {
+    Alert,
+    AspectRatio,
+    Badge,
+    Box,
+    Button,
+    FormControl,
+    IconButton,
+    Input,
+    LinearProgress,
+    Link as MuiLink,
+    Modal,
+    ModalClose,
+    ModalDialog,
+    Typography
+} from '@mui/joy'
 import Link from 'next/link'
 // @ts-ignore
 import * as platformDetect from 'platform-detect'
 import { useMemo, useState } from 'react'
+
+import { EScraperErrorMessage } from '../types'
+import { getShortHash, promptFileDownload } from '../utils'
 
 const DownloadModal = ({
     download,
@@ -14,9 +37,11 @@ const DownloadModal = ({
     download: string | false
     onClose: (event: {}, reason: 'backdropClick' | 'escapeKeyDown' | 'closeClick') => void
     onSubmit: () => void
-    onRun: () => Promise<void>
+    onRun: () => Promise<Record<string, any>>
 }) => {
     const [isRunning, setRunning] = useState(false)
+    const [result, setResult] = useState<any>()
+    const hasError = result instanceof Error
 
     const downloadFolder = useMemo(() => {
         if (typeof window === 'undefined') {
@@ -47,6 +72,68 @@ const DownloadModal = ({
         }
     }, [])
     const codeRunSnippet = `npx jawa ${downloadFolder}vscraper-config-${download}.json`
+
+    const alertColor = useMemo(() => {
+        if (hasError) {
+            if (result.message === EScraperErrorMessage.timeout) {
+                return 'neutral'
+            }
+
+            return 'danger'
+        }
+
+        return 'success'
+    }, [result, hasError])
+
+    const alertContent = useMemo(() => {
+        if (hasError) {
+            if (result.message === EScraperErrorMessage.timeout) {
+                return (
+                    <Typography level="body2">
+                        Page scraping failed due to timeout. During Beta period we have a limit of 10 seconds for
+                        execution duration. If you need more time or wish to support the project{' '}
+                        <Link target="_blank" href={process.env.NEXT_PUBLIC_CONTACT_HREF as string}>
+                            <Typography color="primary" component="u">
+                                contact us
+                            </Typography>
+                        </Link>{' '}
+                        or{' '}
+                        <Link target="_blank" href={process.env.NEXT_PUBLIC_SPONSOR_HREF as string}>
+                            <Typography color="primary" component="u">
+                                sponsor with Jawa Pro
+                            </Typography>
+                        </Link>
+                    </Typography>
+                )
+            }
+
+            return (
+                <Typography level="body2">
+                    Something went wrong, please try again later. Jawas also logged the error and will look into it.
+                </Typography>
+            )
+        }
+
+        return (
+            <Typography level="body2">
+                The page was scraped successfully, results download should have triggered automatically, if not{' '}
+                <MuiLink
+                    underline="always"
+                    onClick={() => {
+                        const resultJSON = JSON.stringify(result)
+                        const resultHash = getShortHash({ payload: resultJSON })
+
+                        promptFileDownload({
+                            fileName: `vscraper-results-${resultHash}.json`,
+                            content: resultJSON
+                        })
+                    }}
+                >
+                    click here
+                </MuiLink>
+            </Typography>
+        )
+    }, [result, hasError])
 
     return (
         <Modal
@@ -141,11 +228,14 @@ const DownloadModal = ({
                             title="Download config"
                             onClick={async () => {
                                 try {
+                                    setResult(undefined)
                                     setRunning(true)
 
-                                    await onRun()
+                                    const result = await onRun()
+
+                                    setResult(result)
                                 } catch (error) {
-                                    console.error(error)
+                                    setResult(error)
                                 } finally {
                                     setRunning(false)
                                 }
@@ -158,13 +248,39 @@ const DownloadModal = ({
                     </Badge>
                 </Box>
 
+                {result && !isRunning && (
+                    <Alert
+                        sx={{ alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginBottom: 2 }}
+                        size="lg"
+                        color={alertColor}
+                        variant="solid"
+                        invertedColors
+                        startDecorator={
+                            <AspectRatio
+                                variant="solid"
+                                ratio="1"
+                                sx={{
+                                    minWidth: 30,
+                                    borderRadius: '50%',
+                                    boxShadow: '0 2px 12px 0 rgb(0 0 0/0.2)'
+                                }}
+                            >
+                                <div>{hasError ? <ErrorIcon fontSize="small" /> : <CheckIcon fontSize="small" />}</div>
+                            </AspectRatio>
+                        }
+                    >
+                        <Box>{alertContent}</Box>
+                    </Alert>
+                )}
+
                 <Typography
                     level="body2"
                     sx={{
                         marginBottom: 2
                     }}
                 >
-                    You can run config locally with command below after download, only requirement is that you have{' '}
+                    You can {result ? 'also ' : ''}run config locally with command below after download, only
+                    requirement is that you have{' '}
                     <Link
                         href="https://docs.npmjs.com/downloading-and-installing-node-js-and-npm"
                         target="_blank"

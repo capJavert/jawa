@@ -1,4 +1,4 @@
-import { TScraperConfig } from '../types'
+import { EScraperErrorMessage, TScraperConfig } from '../types'
 
 export const getConfigResults = async ({
     config,
@@ -23,6 +23,15 @@ export const getConfigResults = async ({
     await fetch('/cloud/runners/beta?brr=true', options)
 
     const response = await fetch('/cloud/runners/beta', options)
+
+    if (!response.ok) {
+        if (response.status === 504) {
+            throw new Error(EScraperErrorMessage.timeout)
+        } else {
+            throw new Error(EScraperErrorMessage.generic)
+        }
+    }
+
     const { results } = await response.json()
 
     return results

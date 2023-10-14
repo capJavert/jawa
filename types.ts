@@ -17,3 +17,8 @@ export type TScraperMessage<Payload = Record<string, any>> = {
     type: EScraperMessageType
     payload: Payload
 }
+
+export enum EScraperErrorMessage {
+    timeout = 'jawa-error-timeout',
+    generic = 'jawa-error'
+}

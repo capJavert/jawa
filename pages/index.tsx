@@ -25,8 +25,6 @@ import {
     Typography
 } from '@mui/joy'
 import { useMediaQuery } from '@mui/material'
-// @ts-ignore
-import * as sha1 from 'js-sha1'
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -38,7 +36,7 @@ import DownloadModal from '../components/DownloadModal'
 import Layout from '../components/Layout'
 import { getConfigResults } from '../dataProvider'
 import { EScraperMessageType, TScraperConfig, TScraperMessage, TScraperSelector } from '../types'
-import { getReCaptchaToken, waitForReCaptcha } from '../utils'
+import { getReCaptchaToken, getShortHash, promptFileDownload, waitForReCaptcha } from '../utils'
 
 const urlRegex =
     /^https:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,63}\.[a-zA-Z0-9()]{1,63}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/
@@ -76,40 +74,9 @@ const getPortalContainer = (() => () => {
     return container
 })()
 
-const promptFileDownload = ({
-    fileName,
-    content,
-    type = 'application/json'
-}: {
-    fileName: string
-    content: BlobPart
-    type?: string
-}) => {
-    const aElement = document.createElement('a')
-    aElement.setAttribute('download', fileName)
-    const href = URL.createObjectURL(
-        new Blob([content], {
-            type
-        })
-    )
-    aElement.href = href
-    aElement.setAttribute('target', '_blank')
-    aElement.click()
-    URL.revokeObjectURL(href)
-}
-
-const getShortHash = ({ payload }: { payload: unknown }): string => {
-    const sha1Instance = sha1.create()
-    sha1Instance.update(JSON.stringify(payload))
-    const hash = sha1Instance.hex() as string
-    const shortHash = hash.substring(0, 10)
-
-    return shortHash
-}
-
 const Home: NextPage = () => {
     const router = useRouter()
-    const { control, handleSubmit, formState } = useForm<TScraperConfig>({
+    const { control, handleSubmit, formState, getValues } = useForm<TScraperConfig>({
         resolver: zodResolver(schema),
         mode: 'onSubmit'
     })
@@ -325,7 +292,9 @@ const Home: NextPage = () => {
                     onClose={() => {
                         setDownloadPending(false)
                     }}
-                    onRun={handleSubmit(async values => {
+                    onRun={async () => {
+                        const values = getValues()
+
                         const reCaptchaToken = await getReCaptchaToken()
 
                         const result = await getConfigResults({
@@ -342,7 +311,9 @@ const Home: NextPage = () => {
                             fileName: `vscraper-results-${resultHash}.json`,
                             content: resultJSON
                         })
-                    })}
+
+                        return result
+                    }}
                 />
             )}
             <form
