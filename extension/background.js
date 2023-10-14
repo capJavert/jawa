@@ -3,7 +3,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         case 'jawa-init': {
             if (sender.tab) {
                 const url = new URL(sender.tab.url)
-                const allowedHostNames = ['kickass.website', 'kickass.codes', 'kickass.ngrok.io', 'jawa.kickass.codes']
+                const allowedHostNames = [
+                    'kickass.website',
+                    'kickass.codes',
+                    'kickass.ngrok.io',
+                    'jawa.kickass.codes',
+                    'jawa.sh'
+                ]
 
                 if (allowedHostNames.includes(url.hostname)) {
                     return sendResponse({ type: 'jawa-init', ok: true })
@@ -24,7 +30,7 @@ chrome.runtime.onConnectExternal.addListener(port => {
 chrome.runtime.onInstalled.addListener(details => {
     if (details.reason === 'install') {
         chrome.tabs.create({
-            url: 'https://jawa.kickass.codes?extevent=install',
+            url: 'https://jawa.sh?extevent=install',
             active: true
         })
     }
