@@ -1,9 +1,5 @@
-import ExtensionIcon from '@mui/icons-material/Extension'
-import InfoIcon from '@mui/icons-material/Info'
-import Alert from '@mui/joy/Alert'
-import Box from '@mui/joy/Box'
-import Button from '@mui/joy/Button'
-import Typography from '@mui/joy/Typography'
+import { Extension as ExtensionIcon, Info as InfoIcon } from '@mui/icons-material'
+import { Alert, Box, Button, Typography } from '@mui/joy'
 import Link from 'next/link'
 import { ReactEventHandler, useMemo } from 'react'
 

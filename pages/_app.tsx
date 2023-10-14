@@ -1,13 +1,8 @@
 import '../styles/globals.css'
 
-import GitHubIcon from '@mui/icons-material/GitHub'
-import SportsBarIcon from '@mui/icons-material/SportsBar'
-import Box from '@mui/joy/Box'
-import IconButton from '@mui/joy/IconButton'
-import { Theme } from '@mui/joy/styles'
+import { GitHub as GitHubIcon, SportsBar as SportsBarIcon } from '@mui/icons-material'
+import { Box, GlobalStyles, IconButton, Theme, Typography } from '@mui/joy'
 import { CssVarsProvider } from '@mui/joy/styles'
-import Typography from '@mui/joy/Typography'
-import { GlobalStyles } from '@mui/system'
 import type { AppProps } from 'next/app'
 import Link from 'next/link'
 import Script from 'next/script'
@@ -35,7 +30,7 @@ const App = ({ Component, pageProps }: AppProps) => {
                         ]
                     }}
                 />
-                <GlobalStyles<Theme>
+                <GlobalStyles
                     styles={theme => ({
                         body: {
                             margin: 0,

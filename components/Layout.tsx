@@ -1,4 +1,4 @@
-import Box, { BoxProps } from '@mui/joy/Box'
+import { Box, BoxProps } from '@mui/joy'
 
 const Container = (props: BoxProps) => (
     <Box
