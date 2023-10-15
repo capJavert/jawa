@@ -18,7 +18,13 @@ This repo consists of the:
 
 ## Web app
 
-Web app that provides embedded browser for visually selecting elements and creating the scrapper config that you can download and run through the CLI.
+Web app that provides embedded browser for visually selecting elements and creating the scraper config that you can download and run through the CLI or Cloud.
+
+### Cloud scraping (Beta)
+
+It is now supported to run your scraper config in the cloud directly from web app. Cloud scrapers use the same Jawa CLI. Currently cloud scrapers have limited availability.
+
+If you need more usage you can check out [Jawa Pro](https://jawa.sh?ref=github). 
 
 ## CLI
 
