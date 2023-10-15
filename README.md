@@ -7,7 +7,7 @@
 
 ![DALL·E 2022-10-17 03 53 08 (2)](https://user-images.githubusercontent.com/9803078/196301040-1f1f34b4-e983-4cd8-859b-951b7fa51068.png)
 
-Visual scraper interface, exports to puppeteer script which you can run anywhere. You can try it out here https://jawa.kickass.codes
+Visual scraper interface, exports to puppeteer script which you can run anywhere. You can try it out here https://jawa.sh
 
 Jawa allows you to visually click elements of any website and then export selectors as a config that you can run in any node environment to scrape the content when needed.
 

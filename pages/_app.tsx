@@ -24,7 +24,7 @@ const App = ({ Component, pageProps }: AppProps) => {
                     openGraph={{
                         images: [
                             {
-                                url: 'https://jawa.kickass.codes/thumb.jpg',
+                                url: 'https://jawa.sh/thumb.jpg',
                                 alt: 'Jawa - Visual Scraper'
                             }
                         ]

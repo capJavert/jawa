@@ -11,8 +11,7 @@ yargsInstance(hideBin(process.argv))
         describe: 'scrape the URLs and data from JSON config',
         builder: yargs => {
             yargs.positional('configPath', {
-                describe:
-                    'path to JSON config file, use visual scraper on https://jawa.kickass.codes or create it yourself'
+                describe: 'path to JSON config file, use visual scraper on https://jawa.sh or create it yourself'
             })
         },
         handler: async argv => {
