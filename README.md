@@ -24,7 +24,7 @@ Web app that provides embedded browser for visually selecting elements and creat
 
 It is now supported to run your scraper config in the cloud directly from web app. Cloud scrapers use the same Jawa CLI. Currently cloud scrapers have limited availability.
 
-If you need more usage you can check out [Jawa Pro](https://jawa.sh?ref=github). 
+If you need more usage you can check out [Jawa Pro](https://jawa.sh/pro?ref=github). 
 
 ## CLI
 
