@@ -5,6 +5,7 @@ import { Box, Button, FormControl, Input, List, ListItem, ListItemDecorator, Typ
 import type { NextPage } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { NextSeo } from 'next-seo'
 import { Controller, useFieldArray, useForm } from 'react-hook-form'
 
 import Layout from '../components/Layout'
@@ -33,6 +34,11 @@ const Home: NextPage = () => {
 
     return (
         <>
+            <NextSeo
+                title="Cloud Scraping"
+                titleTemplate="Jawa Pro | %s"
+                description="Jawa Pro is a subscription-based service that allows you to get more usage out of our tool. You will be able to scrape even more pages and get more data from each page."
+            />
             <form
                 onSubmit={onSubmit}
                 onKeyDown={event => {
