@@ -36,6 +36,14 @@ npx jawa path/to/scraper/config/file.json
 
 or `npx jawa --help` to see all the options.
 
+`jawa` package now also exports `scrape` function so it can be used outside of CLI in your apps or services:
+```js
+import { scrape } from 'jawa'
+```
+```js
+const { scrape } = require('jawa')
+```
+
 ## Browser extension
 
 Browser extension that runs the embedded browser which powers the visual scraper interface. 
