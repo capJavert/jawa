@@ -25,7 +25,7 @@ import Link from 'next/link'
 import * as platformDetect from 'platform-detect'
 import { useMemo, useState } from 'react'
 
-import { EScraperErrorMessage } from '../types'
+import { EScraperErrorMessage } from '../../types'
 import { getShortHash, promptFileDownload } from '../utils'
 
 const DownloadModal = ({

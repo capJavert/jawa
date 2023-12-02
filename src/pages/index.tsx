@@ -31,11 +31,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Controller, useController, useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import { EScraperMessageType, TScraperConfig, TScraperMessage, TScraperSelector } from '../../types'
 import Browser from '../components/Browser'
 import DownloadModal from '../components/DownloadModal'
 import Layout from '../components/Layout'
 import { getConfigResults } from '../dataProvider'
-import { EScraperMessageType, TScraperConfig, TScraperMessage, TScraperSelector } from '../types'
 import {
     getPortalContainer,
     getReCaptchaToken,

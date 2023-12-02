@@ -8,8 +8,8 @@ import { useRouter } from 'next/router'
 import { NextSeo } from 'next-seo'
 import { Controller, useFieldArray, useForm } from 'react-hook-form'
 
+import { TScraperConfig } from '../../types'
 import Layout from '../components/Layout'
-import { TScraperConfig } from '../types'
 import { getPortalContainer, schema } from '../utils'
 
 const Home: NextPage = () => {

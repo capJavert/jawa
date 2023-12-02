@@ -1,4 +1,4 @@
-import { EScraperErrorMessage, TScraperConfig } from '../types'
+import { EScraperErrorMessage, TScraperConfig } from '../../types'
 
 export const getConfigResults = async ({
     config,
