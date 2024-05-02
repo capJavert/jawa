@@ -39,7 +39,7 @@
         "web-ext": "7.8.0"
     },
     "volta": {
-        "node": "18.13.0"
+        "node": "18.20.2"
     },
     "webExt": {
         "sourceDir": "./extension",
