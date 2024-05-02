@@ -180,6 +180,8 @@ const DownloadModal = ({
         )
     }, [result, hasError, isRunning])
 
+    const isCloudEnabled = process.env.NEXT_PUBLIC_CLOUD_ENABLED === 'true'
+
     return (
         <Modal
             open={!!download}
@@ -266,8 +268,9 @@ const DownloadModal = ({
                         or
                     </Typography>
 
-                    <Badge badgeContent="BETA" color="warning">
+                    <Badge badgeContent={isCloudEnabled ? 'BETA' : 'COMING SOON'} color="warning">
                         <Button
+                            disabled={!isCloudEnabled}
                             color="info"
                             size="lg"
                             title="Download config"
