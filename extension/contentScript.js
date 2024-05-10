@@ -1,4 +1,8 @@
 const main = async () => {
+    const state = {
+        clickMode: 'select'
+    }
+
     const isFrame = window.self !== window.top
 
     if (
@@ -16,6 +20,20 @@ const main = async () => {
         return
     }
 
+    const onSyncState = payload => {
+        const { clickMode } = payload
+
+        if (clickMode) {
+            state.clickMode = clickMode
+        }
+    }
+
+    const uiResponse = await chrome.runtime.sendMessage(chrome.runtime.id, { type: 'jawa-ui' })
+
+    if (uiResponse && uiResponse.type === 'jawa-ui') {
+        onSyncState(uiResponse.payload)
+    }
+
     const src = chrome.runtime.getURL('finder.medv.js')
     const { finder } = await import(src)
     const scraperData = {
@@ -25,9 +43,25 @@ const main = async () => {
 
     const numberMatch = /\d/
 
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        switch (message.type) {
+            case 'jawa-ui': {
+                onSyncState(message.payload)
+
+                break
+            }
+            default:
+                break
+        }
+    })
+
     window.addEventListener(
         'click',
         event => {
+            if (state.clickMode !== 'select') {
+                return
+            }
+
             event.preventDefault()
             event.stopPropagation()
 
