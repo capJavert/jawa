@@ -1,9 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Portal } from '@mui/base'
 import {
+    AdsClick as SelectIcon,
     DeleteForever as DeleteForeverIcon,
     Edit as EditIcon,
     HighlightAlt as HighlightAltIcon,
+    Launch as NavigateIcon,
     SearchRounded as SearchRoundedIcon,
     Send as SendIcon,
     Tab as TabIcon,
@@ -14,6 +16,7 @@ import {
     Box,
     Button,
     CircularProgress,
+    Divider,
     FormControl,
     IconButton,
     Input,
@@ -31,7 +34,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Controller, useController, useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { EScraperMessageType, TScraperConfig, TScraperMessage, TScraperSelector } from '../../types'
+import { EClickMode, EScraperMessageType, TScraperConfig, TScraperMessage, TScraperSelector } from '../../types'
 import Browser from '../components/Browser'
 import DownloadModal from '../components/DownloadModal'
 import Layout from '../components/Layout'
@@ -45,6 +48,8 @@ import {
     selectorItemSchema,
     urlSchema
 } from '../utils'
+
+const extensionId = process.env.NEXT_PUBLIC_EXTENSION_CHROME_ID
 
 const Home: NextPage = () => {
     const router = useRouter()
@@ -133,10 +138,10 @@ const Home: NextPage = () => {
     }, [])
 
     const [extensionPort, setExtensionPort] = useState<chrome.runtime.Port | null | undefined>()
+    const [extensionApiVersion, setExtensionApiVersion] = useState<number>(2)
 
     useEffect(() => {
         let mounted = true
-        const extensionId = process.env.NEXT_PUBLIC_EXTENSION_CHROME_ID
 
         if (!extensionId) {
             return
@@ -160,6 +165,7 @@ const Home: NextPage = () => {
                             port.onMessage.addListener(response => {
                                 if (response && response.type === EScraperMessageType.init && response.ok) {
                                     setExtensionPort(port)
+                                    setExtensionApiVersion(response.api || 2)
                                 }
                             })
 
@@ -247,6 +253,25 @@ const Home: NextPage = () => {
         setIframeLoading(false)
     }, [])
     const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))
+
+    const [clickMode, setClickMode] = useState<EClickMode>(EClickMode.Select)
+
+    useEffect(() => {
+        if (!extensionPort) {
+            return
+        }
+
+        try {
+            extensionPort.postMessage({
+                type: EScraperMessageType.ui,
+                payload: {
+                    clickMode: clickMode
+                }
+            })
+        } catch (error) {
+            //
+        }
+    }, [extensionPort, clickMode])
 
     return (
         <>
@@ -370,9 +395,46 @@ const Home: NextPage = () => {
                         display: {
                             xs: 'none',
                             md: 'flex'
-                        }
+                        },
+                        flexDirection: 'column'
                     }}
                 >
+                    {!!activeUrl && extensionApiVersion >= 3 && (
+                        <>
+                            <Sheet
+                                sx={{
+                                    p: 1
+                                }}
+                            >
+                                <Button
+                                    sx={{
+                                        minWidth: '160px',
+                                        justifyContent: 'space-between'
+                                    }}
+                                    size="sm"
+                                    type="button"
+                                    color="primary"
+                                    variant="outlined"
+                                    endDecorator={clickMode === EClickMode.Select ? <SelectIcon /> : <NavigateIcon />}
+                                    disabled={!extensionPort}
+                                    title={`Mode: ${clickMode}`}
+                                    onClick={() => {
+                                        setClickMode(currentClickMode => {
+                                            const newClickMode =
+                                                currentClickMode === EClickMode.Select
+                                                    ? EClickMode.Navigate
+                                                    : EClickMode.Select
+
+                                            return newClickMode
+                                        })
+                                    }}
+                                >
+                                    Mode:&nbsp;{clickMode}
+                                </Button>
+                            </Sheet>
+                            <Divider />
+                        </>
+                    )}
                     {fields.length > 0 ? (
                         <Layout.Container
                             sx={{

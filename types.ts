@@ -10,7 +10,8 @@ export type TScraperConfig = {
 
 export enum EScraperMessageType {
     init = 'jawa-init',
-    scrape = 'jawa-scrape'
+    scrape = 'jawa-scrape',
+    ui = 'jawa-ui'
 }
 
 export type TScraperMessage<Payload = Record<string, any>> = {
@@ -22,4 +23,9 @@ export enum EScraperErrorMessage {
     timeout = 'jawa-error-timeout',
     generic = 'jawa-error',
     rateLimit = 'jawa-error-rate-limit'
+}
+
+export enum EClickMode {
+    Select = 'select',
+    Navigate = 'navigate'
 }
