@@ -8,7 +8,22 @@ const state = {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     switch (message.type) {
         case 'jawa-init': {
-            return sendResponse({ type: 'jawa-init', ok: true, api: state.api })
+            if (sender.tab) {
+                const url = new URL(sender.tab.url)
+                const allowedHostNames = [
+                    'kickass.website',
+                    'kickass.codes',
+                    'kickass.ngrok.io',
+                    'jawa.kickass.codes',
+                    'jawa.sh'
+                ]
+
+                if (allowedHostNames.includes(url.hostname)) {
+                    return sendResponse({ type: 'jawa-init', ok: true, api: state.api })
+                }
+            }
+
+            return sendResponse({ type: 'jawa-init', ok: false, api: state.api })
         }
         case 'jawa-ui': {
             return sendResponse({ type: 'jawa-ui', payload: state.ui })
