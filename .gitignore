@@ -40,3 +40,6 @@ next-env.d.ts
 
 # extension
 web-ext-artifacts
+
+# panda
+panda-styled-system
