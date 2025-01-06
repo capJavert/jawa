@@ -71,7 +71,8 @@ export const urlSchema = z.preprocess(
 
 export const selectorItemSchema = z.object({
     url: urlSchema,
-    selector: z.string().min(1, { message: 'Required' })
+    selector: z.string().min(1, { message: 'Required' }),
+    action: z.enum(['click']).optional()
 })
 
 export const schema = z.object({

@@ -32,7 +32,6 @@ import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Controller, useController, useFieldArray, useForm } from 'react-hook-form'
-import { z } from 'zod'
 
 import { EClickMode, EScraperMessageType, TScraperConfig, TScraperMessage, TScraperSelector } from '../../types'
 import Browser from '../components/Browser'
@@ -106,7 +105,7 @@ const Home: NextPage = () => {
             switch (type) {
                 case EScraperMessageType.scrape: {
                     const {
-                        payload: { url, selector }
+                        payload: { url, selector, action }
                     } = event.data as TScraperMessage<TScraperSelector>
 
                     if (!selectorItemSchema.safeParse({ url, selector }).success) {
@@ -114,12 +113,13 @@ const Home: NextPage = () => {
                     }
 
                     const fieldInstance = selectorsFieldRef.current
-                    const currentField = fieldInstance.fields.find(item => item.selector === selector)
+                    const lastField = fieldInstance.fields[fieldInstance.fields.length - 1]
 
-                    if (!currentField) {
+                    if (lastField?.selector !== selector) {
                         fieldInstance.append({
                             url,
-                            selector
+                            selector,
+                            action
                         })
                     }
 
@@ -453,10 +453,13 @@ const Home: NextPage = () => {
                                     <Controller
                                         name={`items.${index}.selector`}
                                         control={control}
-                                        render={({ field, fieldState }) => {
+                                        render={({ field: inputField, fieldState }) => {
                                             return (
                                                 <FormControl size="sm">
                                                     <Input
+                                                        startDecorator={
+                                                            field.action === 'click' ? <NavigateIcon /> : <SelectIcon />
+                                                        }
                                                         error={!!fieldState.error}
                                                         name={`items.${index}.selector`}
                                                         placeholder="Selector"
@@ -495,9 +498,9 @@ const Home: NextPage = () => {
                                                             </>
                                                         }
                                                         variant="soft"
-                                                        value={field.value}
-                                                        onChange={field.onChange}
-                                                        onBlur={field.onBlur}
+                                                        value={inputField.value}
+                                                        onChange={inputField.onChange}
+                                                        onBlur={inputField.onBlur}
                                                     />
                                                 </FormControl>
                                             )

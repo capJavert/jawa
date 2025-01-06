@@ -50,41 +50,61 @@ const scrape = async (config, options) => {
                     logger('log', `Navigated to ${item.url}`)
                 }
 
-                logger('log', 'Looking for selector', item.selector)
+                switch (item.action) {
+                    case 'click': {
+                        logger('log', 'Clicking element', item.selector)
 
-                let scrapedData = await page.$$eval(item.selector, elements =>
-                    elements.map(element => ({
-                        tag: element.tagName?.toLowerCase() || undefined,
-                        elementId: element.id || undefined,
-                        className: element.className || undefined,
-                        title: element.title || undefined,
-                        name: element.getAttribute('name') || undefined,
-                        alt: element.getAttribute('alt') || undefined,
-                        src: element.src || undefined,
-                        href: element.href || undefined,
-                        for: element.getAttribute('for') || undefined,
-                        type: element.type || undefined,
-                        value: element.value || undefined,
-                        dataAttributes:
-                            Object.keys(element.dataset || {}).length > 0
-                                ? {
-                                      ...element.dataset
-                                  }
-                                : undefined,
-                        textContent: element.textContent
-                    }))
-                )
+                        await page.click(item.selector)
 
-                if (scrapedData.length < 2) {
-                    scrapedData = scrapedData[0] || null
+                        logger('log', 'Element clicked', item.selector)
+
+                        break
+                    }
+                    // select action is default and undefined for backward compatibility
+                    default: {
+                        logger('log', 'Looking for selector', item.selector)
+
+                        const lastItem = config.items[i - 1]
+
+                        if (lastItem?.action === 'click') {
+                            await page.waitForSelector(item.selector, { timeout: 5000 })
+                        }
+
+                        let scrapedData = await page.$$eval(item.selector, elements =>
+                            elements.map(element => ({
+                                tag: element.tagName?.toLowerCase() || undefined,
+                                elementId: element.id || undefined,
+                                className: element.className || undefined,
+                                title: element.title || undefined,
+                                name: element.getAttribute('name') || undefined,
+                                alt: element.getAttribute('alt') || undefined,
+                                src: element.src || undefined,
+                                href: element.href || undefined,
+                                for: element.getAttribute('for') || undefined,
+                                type: element.type || undefined,
+                                value: element.value || undefined,
+                                dataAttributes:
+                                    Object.keys(element.dataset || {}).length > 0
+                                        ? {
+                                              ...element.dataset
+                                          }
+                                        : undefined,
+                                textContent: element.textContent
+                            }))
+                        )
+
+                        if (scrapedData.length < 2) {
+                            scrapedData = scrapedData[0] || null
+                        }
+
+                        results.push({
+                            type: 'result',
+                            url: item.url,
+                            selector: item.selector,
+                            data: scrapedData
+                        })
+                    }
                 }
-
-                results.push({
-                    type: 'result',
-                    url: item.url,
-                    selector: item.selector,
-                    data: scrapedData
-                })
             } catch (error) {
                 if (options.verbose) {
                     logger('error', error)

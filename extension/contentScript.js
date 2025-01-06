@@ -58,12 +58,10 @@ const main = async () => {
     window.addEventListener(
         'click',
         event => {
-            if (state.clickMode !== 'select') {
-                return
+            if (state.clickMode === 'select') {
+                event.preventDefault()
+                event.stopPropagation()
             }
-
-            event.preventDefault()
-            event.stopPropagation()
 
             const selector = finder(event.target, {
                 className: name => {
@@ -84,7 +82,8 @@ const main = async () => {
                     type: 'jawa-scrape',
                     payload: {
                         url: scraperData.url,
-                        selector
+                        selector,
+                        action: state.clickMode === 'navigate' ? 'click' : undefined
                     }
                 },
                 {
