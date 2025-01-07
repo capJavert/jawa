@@ -94,7 +94,7 @@ const scrape = async (config, options) => {
                         )
 
                         if (scrapedData.length < 2) {
-                            scrapedData = scrapedData[0] || null
+                            scrapedData = scrapedData[0] ? [scrapedData[0]] : null
                         }
 
                         results.push({
