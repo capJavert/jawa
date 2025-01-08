@@ -99,7 +99,7 @@ const scrape = async (config, options) => {
 
                         results.push({
                             type: 'result',
-                            url: item.url,
+                            url: page.url(),
                             selector: item.selector,
                             data: scrapedData
                         })
@@ -114,7 +114,7 @@ const scrape = async (config, options) => {
 
                 results.push({
                     type: 'error',
-                    url: item.url,
+                    url: page.url(),
                     error: error.message
                 })
             }
