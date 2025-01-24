@@ -22,7 +22,7 @@
     },
     "homepage": "https://github.com/capJavert/vscraper#readme",
     "dependencies": {
-        "puppeteer": "18.2.1",
+        "puppeteer": "24.0.0",
         "yargs": "17.6.0"
     }
 }
