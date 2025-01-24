@@ -60,6 +60,27 @@ const scrape = async (config, options) => {
 
                         break
                     }
+                    case 'scroll': {
+                        logger('log', 'Scrolling to element', item.selector)
+
+                        await page.waitForSelector(item.selector, { timeout: 5000 })
+
+                        const element = await page.$(item.selector)
+                        await element.scrollIntoView()
+
+                        logger('log', 'Element in view', item.selector)
+
+                        break
+                    }
+                    case 'wait': {
+                        logger('log', 'Waiting for element', item.selector)
+
+                        await page.waitForSelector(item.selector, { timeout: 5000 })
+
+                        logger('log', 'Element appeared', item.selector)
+
+                        break
+                    }
                     // select action is default and undefined for backward compatibility
                     default: {
                         logger('log', 'Looking for selector', item.selector)
