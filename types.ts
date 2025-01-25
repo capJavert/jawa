@@ -1,6 +1,7 @@
 export type TScraperSelector = {
     url: string
     selector: string
+    action?: 'click'
 }
 
 export type TScraperConfig = {
